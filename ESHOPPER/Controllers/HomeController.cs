@@ -1,10 +1,10 @@
-﻿using ESHOPPER.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Data.Entity;
+﻿    using ESHOPPER.Models;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Web;
+    using System.Web.Mvc;
+    using System.Data.Entity;
 
 namespace ESHOPPER.Controllers.WebPage
 {
@@ -873,7 +873,7 @@ namespace ESHOPPER.Controllers.WebPage
                 TempData["PaymentError"] = "Sai chữ ký bảo mật.";
                 return RedirectToAction("PaymentFail");
             }
-
+        
         }
         // ==========================================
         // 8. TRANG THÔNG BÁO THÀNH CÔNG

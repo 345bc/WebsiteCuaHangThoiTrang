@@ -21,7 +21,7 @@ namespace ESHOPPER.Controllers.WebPage
                 nhaCungCaps = db.NhaCungCaps.ToList(),
                 SanPhams = db.SanPhams
                         .OrderByDescending(p => p.MaSP)
-                        .Take(8) // lấy 8 sản phẩm mới nhất
+                        .Take(16) // lấy 8 sản phẩm mới nhất
                         .ToList(),
                 SanPhamNgauNhiens = db.SanPhams
                                 .OrderBy(r => Guid.NewGuid()) // sắp xếp ngẫu nhiên

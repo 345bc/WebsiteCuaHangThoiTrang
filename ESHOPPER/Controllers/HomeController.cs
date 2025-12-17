@@ -41,6 +41,15 @@ namespace ESHOPPER.Controllers.WebPage
             return PartialView("ParCategories", model);
         }
 
+        public ActionResult cac()
+        {
+            // 1. Lấy DANH SÁCH danh mục từ CSDL
+            var model = db.DanhMucSanPhams.ToList();
+
+            // 2. Gửi DANH SÁCH này đến PartialView
+            return PartialView("ParCategories", model);
+        }
+
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";

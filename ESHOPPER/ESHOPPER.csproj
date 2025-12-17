@@ -196,73 +196,73 @@
     <Compile Include="Helper\JwtHelper.cs" />
     <Compile Include="Models\AdminViewModel.cs" />
     <Compile Include="Models\BienTheSanPham.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\CartItem.cs" />
     <Compile Include="Models\CartViewModel.cs" />
     <Compile Include="Models\ChiTietDonHang.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ChiTietGioHang.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DanhMucSanPham.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\DonHang.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\FASHIONSHOP.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FASHIONSHOP.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\FASHIONSHOP.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\FASHIONSHOP.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FASHIONSHOP.edmx</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\GioHang.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\GioHangPartial.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\Intro.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\KhachHang.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\KhuyenMai.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\KichThuoc.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\MauSac.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\NhaCungCap.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\NhanVien.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ProductDetailsViewModel.cs" />
+    <Compile Include="Models\QlyFashionShopEntities.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QlyFashionShopEntities.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\QlyFashionShopEntities.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\QlyFashionShopEntities.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QlyFashionShopEntities.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Models\SanPham.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ShopViewModel.cs" />
     <Compile Include="Models\TTDONHANG.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\User.cs">
-      <DependentUpon>FASHIONSHOP.tt</DependentUpon>
+      <DependentUpon>QlyFashionShopEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\VnPayLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -354,15 +354,15 @@
     <Content Include="Images\vendor-6.jpg" />
     <Content Include="Images\vendor-7.jpg" />
     <Content Include="Images\vendor-8.jpg" />
-    <Content Include="Models\FASHIONSHOP.Context.tt">
+    <Content Include="Models\QlyFashionShopEntities.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>FASHIONSHOP.edmx</DependentUpon>
-      <LastGenOutput>FASHIONSHOP.Context.cs</LastGenOutput>
+      <DependentUpon>QlyFashionShopEntities.edmx</DependentUpon>
+      <LastGenOutput>QlyFashionShopEntities.Context.cs</LastGenOutput>
     </Content>
-    <Content Include="Models\FASHIONSHOP.tt">
+    <Content Include="Models\QlyFashionShopEntities.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>FASHIONSHOP.edmx</DependentUpon>
-      <LastGenOutput>FASHIONSHOP.cs</LastGenOutput>
+      <DependentUpon>QlyFashionShopEntities.edmx</DependentUpon>
+      <LastGenOutput>QlyFashionShopEntities.cs</LastGenOutput>
     </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -464,12 +464,12 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EntityDeploy Include="Models\FASHIONSHOP.edmx">
+    <EntityDeploy Include="Models\QlyFashionShopEntities.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>FASHIONSHOP.Designer.cs</LastGenOutput>
+      <LastGenOutput>QlyFashionShopEntities.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <Content Include="Models\FASHIONSHOP.edmx.diagram">
-      <DependentUpon>FASHIONSHOP.edmx</DependentUpon>
+    <Content Include="Models\QlyFashionShopEntities.edmx.diagram">
+      <DependentUpon>QlyFashionShopEntities.edmx</DependentUpon>
     </Content>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />

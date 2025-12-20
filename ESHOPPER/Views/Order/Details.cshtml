@@ -1,0 +1,144 @@
+﻿@model IEnumerable<ESHOPPER.Models.ChiTietDonHang>
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var firstItem = Model.FirstOrDefault();
+    var donHangInfo = firstItem?.DonHang;
+
+    decimal tongTienHang = Model.Sum(x => (x.SoLuong ?? 0) * (x.DonGia ?? 0));
+}
+
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <div>
+        <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-slate-800">Chi tiết đơn hàng</h2>
+            <span class="px-3 py-1 rounded-full bg-brand-blue/10 text-brand-blue text-sm font-bold font-mono border border-brand-blue/20">
+                #@(donHangInfo?.MaDH ?? 0)
+            </span>
+        </div>
+        <p class="text-sm text-slate-500 mt-1">
+            Ngày đặt: @(donHangInfo?.NgayDat.HasValue == true ? donHangInfo.NgayDat.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+        </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <a href="@Url.Action("Index", "Order")" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Quay lại
+        </a>
+        @*<button class="px-4 py-2 bg-brand-blue text-white font-medium rounded-lg hover:bg-brand-dark transition-colors shadow-md flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            In hóa đơn
+        </button>*@
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center">
+                <h3 class="text-sm font-bold uppercase text-slate-400 tracking-wider">Danh sách sản phẩm (@Model.Count())</h3>
+            </div>
+
+            <div class="divide-y divide-slate-100">
+                @foreach (var item in Model)
+                {
+                    decimal subTotal = (item.SoLuong ?? 0) * (item.DonGia ?? 0);
+
+                    <div class="p-6 flex gap-4 hover:bg-slate-50 transition-colors group">
+                        <div class="w-20 h-20 rounded-lg border border-slate-200 bg-white flex items-center justify-center overflow-hidden shrink-0">
+                            @if (item.BienTheSanPham != null && !string.IsNullOrEmpty(item.BienTheSanPham.AnhBienThe))
+                            {
+                                <img src="@Url.Content("~/Images/Product_Variants/" + item.BienTheSanPham.AnhBienThe)" class="w-full h-full object-contain p-1" />
+                            }
+                            else
+                            {
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            }
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="text-base font-bold text-slate-800 line-clamp-2">
+                                    @(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Sản phẩm")
+                                </h4>
+                                <span class="text-base font-bold text-slate-800">@string.Format("{0:N0} ₫", subTotal)</span>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">
+                                    Màu: @(item.BienTheSanPham?.MauSac?.TenMau ?? "-")
+                                </span>
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">
+                                    Size: @(item.BienTheSanPham?.KichThuoc?.TenSize ?? "-")
+                                </span>
+                            </div>
+
+                            <div class="text-sm text-slate-500 flex items-center gap-1">
+                                <span>@string.Format("{0:N0} ₫", item.DonGia)</span>
+                                <span class="text-xs">x</span>
+                                <span class="font-bold text-slate-700">@item.SoLuong</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="bg-slate-50 p-6 border-t border-slate-200">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-500 text-sm">Tạm tính</span>
+                    <span class="text-slate-700 font-medium">@string.Format("{0:N0} ₫", tongTienHang)</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-500 text-sm">Phí vận chuyển</span>
+                    <span class="text-green-600 font-medium text-sm">Miễn phí</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-slate-200 mt-3">
+                    <span class="text-slate-800 font-bold">Tổng cộng</span>
+                    <span class="text-2xl font-bold text-brand-blue">@string.Format("{0:N0} ₫", donHangInfo?.TongTien ?? tongTienHang)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-1 space-y-6">
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-4 border-b pb-2">Thông tin khách hàng</h3>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-500 uppercase border border-slate-200">
+                    @(donHangInfo?.TenNguoiNhan?.Substring(0, 1) ?? "K")
+                </div>
+                <div>
+                    <p class="font-bold text-slate-800">@(donHangInfo?.TenNguoiNhan ?? "Khách vãng lai")</p>
+                    <p class="text-xs text-slate-400">Khách hàng</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="text-xs text-slate-500 block mb-0.5">Số điện thoại</label>
+                    <a href="tel:@donHangInfo.SDTNguoiNhan" class="text-slate-700 font-medium hover:text-brand-blue">
+                        @donHangInfo.SDTNguoiNhan
+                    </a>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500 block mb-0.5">Địa chỉ giao hàng</label>
+                    <p class="text-slate-700 leading-relaxed">
+                        @donHangInfo.DiaChiNhan
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

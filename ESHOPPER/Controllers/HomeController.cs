@@ -353,7 +353,7 @@ public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize
             }
 
             // Chuyển hướng về trang Index của Controller Cart để thấy thay đổi
-            return RedirectToAction("Index", "Cart");
+            return RedirectToAction("Cart", "Home");
         }
 
         // [SỬA]: Tham số int
@@ -654,109 +654,109 @@ public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize
             return vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
         }
 
-        //public ActionResult PaymentCallback()
-        //{
-        //    string vnp_HashSecret = "R08TH1P0J1N4T0L63X0Q3KDTFWBYS8YT";
-        //    var vnpayData = Request.QueryString;
-        //    VnPayLibrary vnpay = new VnPayLibrary();
+        public ActionResult PaymentCallback()
+        {
+            string vnp_HashSecret = "R08TH1P0J1N4T0L63X0Q3KDTFWBYS8YT";
+            var vnpayData = Request.QueryString;
+            VnPayLibrary vnpay = new VnPayLibrary();
 
-        //    foreach (string s in vnpayData)
-        //    {
-        //        if (!string.IsNullOrEmpty(s) && s.StartsWith("vnp_"))
-        //        {
-        //            vnpay.AddResponseData(s, vnpayData[s]);
-        //        }
-        //    }
+            foreach (string s in vnpayData)
+            {
+                if (!string.IsNullOrEmpty(s) && s.StartsWith("vnp_"))
+                {
+                    vnpay.AddResponseData(s, vnpayData[s]);
+                }
+            }
 
-        //    string vnp_ResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
-        //    string vnp_TxnRef = vnpay.GetResponseData("vnp_TxnRef");
-        //    string vnp_SecureHash = Request.QueryString["vnp_SecureHash"];
+            string vnp_ResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
+            string vnp_TxnRef = vnpay.GetResponseData("vnp_TxnRef");
+            string vnp_SecureHash = Request.QueryString["vnp_SecureHash"];
 
-        //    bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
+            bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
 
-        //    if (checkSignature)
-        //    {
-        //        if (int.TryParse(vnp_TxnRef, out int maDH))
-        //        {
-        //            var order = db.DonHangs.Find(maDH);
-        //            if (order != null)
-        //            {
-        //                if (vnp_ResponseCode == "00") // THÀNH CÔNG
-        //                {
-        //                    order.TrangThai = 1;
-        //                    db.SaveChanges();
+            if (checkSignature)
+            {
+                if (int.TryParse(vnp_TxnRef, out int maDH))
+                {
+                    var order = db.DonHangs.Find(maDH);
+                    if (order != null)
+                    {
+                        if (vnp_ResponseCode == "00") // THÀNH CÔNG
+                        {
+                            order.TrangThai = 1;
+                            db.SaveChanges();
 
-        //                    // Logic xóa giỏ hàng cho VNPay (Xóa các món trong đơn hàng đó)
-        //                    // Cần lấy lại chi tiết đơn hàng vừa tạo để biết món nào cần xóa
-        //                    var itemsInOrder = db.ChiTietDonHangs.Where(d => d.MaDH == maDH).ToList();
+                            // Logic xóa giỏ hàng cho VNPay (Xóa các món trong đơn hàng đó)
+                            // Cần lấy lại chi tiết đơn hàng vừa tạo để biết món nào cần xóa
+                            var itemsInOrder = db.ChiTietDonHangs.Where(d => d.MaDH == maDH).ToList();
 
-        //                    if (Session["MaKH"] != null)
-        //                    {
-        //                        int maKH = (int)Session["MaKH"];
-        //                        var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
-        //                        if (gioHang != null)
-        //                        {
-        //                            foreach (var i in itemsInOrder)
-        //                            {
-        //                                // Lưu ý: i.Size và i.Mau ở đây là Text. Trong giỏ hàng lại lưu ID.
-        //                                // Đây là vấn đề nan giải khi thiết kế CSDL lệch pha (Order lưu text, Cart lưu ID).
-        //                                // Giải pháp tạm thời: Xóa theo MaSP (nếu mua tất cả biến thể).
-        //                                // Hoặc phải truy ngược ID từ Text (rủi ro).
-        //                                // Giải pháp tốt nhất: Ở bước Checkout, sau khi add DonHang, ta xóa giỏ hàng LUÔN trước khi redirect VNPay.
-        //                                // Nếu thanh toán thất bại thì User phải pick lại.
+                            if (Session["MaKH"] != null)
+                            {
+                                int maKH = (int)Session["MaKH"];
+                                var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+                                if (gioHang != null)
+                                {
+                                    foreach (var i in itemsInOrder)
+                                    {
+                                        // Lưu ý: i.Size và i.Mau ở đây là Text. Trong giỏ hàng lại lưu ID.
+                                        // Đây là vấn đề nan giải khi thiết kế CSDL lệch pha (Order lưu text, Cart lưu ID).
+                                        // Giải pháp tạm thời: Xóa theo MaSP (nếu mua tất cả biến thể).
+                                        // Hoặc phải truy ngược ID từ Text (rủi ro).
+                                        // Giải pháp tốt nhất: Ở bước Checkout, sau khi add DonHang, ta xóa giỏ hàng LUÔN trước khi redirect VNPay.
+                                        // Nếu thanh toán thất bại thì User phải pick lại.
 
-        //                                // Nhưng để code chạy tạm thời với CSDL hiện tại:
-        //                                var itemsToRemove = db.ChiTietGioHangs.Where(c => c.MaGioHang == gioHang.MaGioHang && c.MaSP == i.MaSP).ToList();
-        //                                // Đoạn này xóa hơi "lố" (xóa hết size của sp đó), nhưng an toàn hơn việc ko xóa được.
-        //                                db.ChiTietGioHangs.RemoveRange(itemsToRemove);
-        //                            }
-        //                            db.SaveChanges();
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        // Session cart
-        //                        var gh = Session["Cart"] as GioHang;
-        //                        if (gh != null)
-        //                        {
-        //                            foreach (var i in itemsInOrder)
-        //                            {
-        //                                // 1. Tìm các item cần xóa và chuyển sang List tạm
-        //                                var itemsToRemove = gh.ChiTietGioHangs
-        //                                                      .Where(x => x.MaSP == i.MaSP)
-        //                                                      .ToList();
+                                        // Nhưng để code chạy tạm thời với CSDL hiện tại:
+                                        var itemsToRemove = db.ChiTietGioHangs.Where(c => c.MaGioHang == gioHang.MaGioHang && c.MaBienThe == i.MaBienThe).ToList();
+                                        // Đoạn này xóa hơi "lố" (xóa hết size của sp đó), nhưng an toàn hơn việc ko xóa được.
+                                        db.ChiTietGioHangs.RemoveRange(itemsToRemove);
+                                    }
+                                    db.SaveChanges();
+                                }
+                            }
+                            else
+                            {
+                                // Session cart
+                                var gh = Session["Cart"] as GioHang;
+                                if (gh != null)
+                                {
+                                    foreach (var i in itemsInOrder)
+                                    {
+                                        // 1. Tìm các item cần xóa và chuyển sang List tạm
+                                        var itemsToRemove = gh.ChiTietGioHangs
+                                                              .Where(x => x.MaBienThe == i.MaBienThe)
+                                                              .ToList();
 
-        //                                // 2. Lặp và xóa từng item khỏi collection gốc
-        //                                foreach (var item in itemsToRemove)
-        //                                {
-        //                                    gh.ChiTietGioHangs.Remove(item);
-        //                                }
-        //                            }
-        //                            Session["Cart"] = gh;
-        //                        }
-        //                    }
+                                        // 2. Lặp và xóa từng item khỏi collection gốc
+                                        foreach (var item in itemsToRemove)
+                                        {
+                                            gh.ChiTietGioHangs.Remove(item);
+                                        }
+                                    }
+                                    Session["Cart"] = gh;
+                                }
+                            }
 
-        //                    TempData["SuccessMessage"] = "Thanh toán thành công!";
-        //                    return RedirectToAction("OrderSuccess");
-        //                }
-        //                else
-        //                {
-        //                    order.TrangThai = 0; // Hủy/Lỗi
-        //                    db.SaveChanges();
-        //                    TempData["PaymentError"] = "Lỗi thanh toán VNPay: Code " + vnp_ResponseCode;
-        //                    return RedirectToAction("PaymentFail");
-        //                }
-        //            }
-        //        }
-        //        TempData["PaymentError"] = "Không tìm thấy đơn hàng.";
-        //        return RedirectToAction("PaymentFail");
-        //    }
-        //    else
-        //    {
-        //        TempData["PaymentError"] = "Sai chữ ký bảo mật.";
-        //        return RedirectToAction("PaymentFail");
-        //    }
-        //}
+                            TempData["SuccessMessage"] = "Thanh toán thành công!";
+                            return RedirectToAction("OrderSuccess");
+                        }
+                        else
+                        {
+                            order.TrangThai = 0; // Hủy/Lỗi
+                            db.SaveChanges();
+                            TempData["PaymentError"] = "Lỗi thanh toán VNPay: Code " + vnp_ResponseCode;
+                            return RedirectToAction("PaymentFail");
+                        }
+                    }
+                }
+                TempData["PaymentError"] = "Không tìm thấy đơn hàng.";
+                return RedirectToAction("PaymentFail");
+            }
+            else
+            {
+                TempData["PaymentError"] = "Sai chữ ký bảo mật.";
+                return RedirectToAction("PaymentFail");
+            }
+        }
 
         public ActionResult OrderSuccess()
         {

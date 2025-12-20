@@ -145,9 +145,9 @@
                         </div>
 
                         <div class="col-md-5 d-flex align-items-center text-start">
-                            <img src="~/Images/Products/@(item.BienTheSanPham?.SanPham?.AnhSP ?? "no-image.png")" class="p-img me-3" />
+                            <img src="~/Images/Product_Variants/@(item.BienTheSanPham?.AnhBienThe ?? "no-image.png")" class="p-img me-3" />
                             <div>
-                                <h6 class="mb-1 text-dark">@(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Sản phẩm")</h6>
+                                <h6 class="px-3 mb-1 text-dark">@(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Sản phẩm")</h6>
                                 <small class="text-muted d-block">
                                     Size: @(item.BienTheSanPham?.KichThuoc?.TenSize ?? "-")
                                     | Màu: @(item.BienTheSanPham?.MauSac?.TenMau ?? "-")
@@ -156,11 +156,11 @@
                         </div>
 
                         <div class="col-md-2 fw-bold text-dark">
-                            @string.Format("{0:N0} ₫", item.DonGia)
+                            @string.Format("{0:N0} VNĐ", item.DonGia)
                         </div>
 
                         <div class="col-md-2">
-                            @using (Html.BeginForm("UpdateCart", "Cart", FormMethod.Post, new { @class = "qty-form" }))
+                            @using (Html.BeginForm("UpdateCart", "Home", FormMethod.Post, new { @class = "qty-form" }))
                             {
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@item.MaBienThe" />

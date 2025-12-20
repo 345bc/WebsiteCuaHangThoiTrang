@@ -86,7 +86,7 @@
                     Danh mục sản phẩm
                 </a>
 
-                <a href="@Url.Action("Order", "Admin")"
+                <a href="@Url.Action("Index", "Order")"
                    class="flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-r-lg border-l-[5px] transition-all duration-200
                    @(ViewBag.Active == "Donhang"
                        ? "bg-white border-brand-blue text-brand-blue shadow-sm"
@@ -97,7 +97,7 @@
 
             <div class="my-6 border-t border-blue-200/50 mx-6"></div>
 
-            <div class="px-6 mb-3">
+            @*<div class="px-6 mb-3">
                 <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tài khoản</p>
             </div>
 
@@ -116,7 +116,7 @@
                          : "border-transparent text-slate-600 hover:bg-blue-100 hover:text-brand-blue")">
                     Quản lý tài khoản
                 </a>
-            </div>
+            </div>*@
         </nav>
 
     </aside>

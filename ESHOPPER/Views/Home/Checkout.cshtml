@@ -4,21 +4,17 @@
     ViewBag.Title = "Thanh toán an toàn";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    // 1. QUAN TRỌNG: Lấy danh sách sản phẩm ĐÃ LỌC từ Controller
+    // Lấy danh sách sản phẩm
     var listThanhToan = ViewBag.ListThanhToan as List<ESHOPPER.Models.ChiTietGioHang>;
-
-    // Kiểm tra trạng thái đăng nhập
     bool isLoggedIn = Session["MaKH"] != null;
 
-    // Class CSS cho ô input
     string normalClass = "form-control form-control-custom";
     string lockedClass = "form-control form-control-custom bg-secondary text-dark";
 }
 
 <style>
-    .checkout-container { background-color: #f8f9fa; padding: 50px 0; }
     
-    /* Card Style */
+
     .checkout-card {
         background: #fff;
         border-radius: 12px;
@@ -32,9 +28,12 @@
         padding-bottom: 15px;
         margin-bottom: 25px;
     }
-    .card-header-custom h4 { font-weight: 700; color: #333; }
 
-    /* Form Controls */
+        .card-header-custom h4 {
+            font-weight: 700;
+            color: #333;
+        }
+
     .form-control-custom {
         border: 1px solid #e0e0e0;
         border-radius: 8px;
@@ -43,14 +42,20 @@
         font-size: 0.95rem;
         background-color: #fbfbfb;
     }
-    .form-control-custom:focus {
-        border-color: #D19C97;
-        box-shadow: 0 0 0 3px rgba(209, 156, 151, 0.2);
-        background-color: #fff;
-    }
-    .form-label { font-weight: 600; color: #555; margin-bottom: 8px; display: block; }
 
-    /* Payment Options */
+        .form-control-custom:focus {
+            border-color: #D19C97;
+            box-shadow: 0 0 0 3px rgba(209, 156, 151, 0.2);
+            background-color: #fff;
+        }
+
+    .form-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+        display: block;
+    }
+
     .payment-option {
         border: 1px solid #e0e0e0;
         border-radius: 10px;
@@ -61,16 +66,29 @@
         display: flex;
         align-items: center;
     }
-    .payment-option:hover, .payment-option.active {
-        border-color: #D19C97;
-        background-color: #fff9f9;
-    }
-    .payment-option input { margin-right: 15px; transform: scale(1.2); }
-    .payment-logo { height: 30px; margin-left: auto; }
 
-    /* Summary Section */
-    .summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; }
-    
+        .payment-option:hover, .payment-option.active {
+            border-color: #D19C97;
+            background-color: #fff9f9;
+        }
+
+        .payment-option input {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+    .payment-logo {
+        height: 30px;
+        margin-left: auto;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+
     .summary-total {
         border-top: 2px dashed #eee;
         padding-top: 15px;
@@ -94,68 +112,89 @@
         border: none;
         transition: 0.3s;
     }
-    .btn-place-order:hover {
-        background: #D19C97;
-        box-shadow: 0 10px 20px rgba(209, 156, 151, 0.4);
-    }
+
+        .btn-place-order:hover {
+            background: #D19C97;
+            box-shadow: 0 10px 20px rgba(209, 156, 151, 0.4);
+        }
 </style>
 
-<div class="checkout-container">
-    <div class="container">
+<div class="container-fluid px-5 bg-white border-bottom border py-3 mb-4 shadow-sm"
+     style="position: sticky; top: 80px; z-index: 2000;">
 
-        <div class="text-center mb-5">
-            <h2 class="font-weight-bold">Thanh toán an toàn</h2>
-            <p class="text-muted">Vui lòng điền thông tin để hoàn tất đơn hàng của bạn.</p>
-        </div>
+    <div class="d-flex align-items-center justify-content-center position-relative">
 
+        <a href="javascript:history.back()" class="px-xl-5 text-dark position-absolute" style="left: 15px; font-size: 1.2rem; text-decoration: none;">
+            <i class="fa fa-arrow-left"></i>
+        </a>
+
+        <h5 class="m-0 font-weight-bold text-uppercase" style="letter-spacing: 1px;">
+            Xác nhận đặt hàng
+        </h5>
+
+    </div>
+</div>
+<div class="container-fluid px-5">
+    <div class="px-xl-5">
+        
         @using (Html.BeginForm("Checkout", "Home", FormMethod.Post, new { id = "checkoutForm" }))
         {
             @Html.AntiForgeryToken()
-            
             <input type="hidden" name="selectedIds" value="@ViewBag.SelectedIds" />
 
             <div class="row">
                 <div class="col-lg-7">
                     <div class="checkout-card">
                         <div class="card-header-custom">
-                            <h4><i class="fa fa-user-circle mr-2 text-primary"></i> Thông tin khách hàng</h4>
+                            <h4><i class="fa fa-user-circle mr-2 text-primary"></i> Thông tin giao hàng</h4>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
                                 <div class="position-relative">
-                                    @Html.EditorFor(model => model.TenNguoiNhan, new { htmlAttributes = new { 
-                                        @class = isLoggedIn ? lockedClass : normalClass,
-                                        @required = "required",
-                                        @placeholder = "Ví dụ: Nguyễn Văn A",
-                                        @readonly = isLoggedIn ? "readonly" : null
-                                    }})
-                                    @if (isLoggedIn) { <i class="fa fa-lock position-absolute text-muted" style="right: 15px; top: 12px;" title="Đã xác thực"></i> }
+                                    @Html.EditorFor(model => model.TenNguoiNhan, new
+                               {
+                                   htmlAttributes = new
+                                   {
+                                       @class = isLoggedIn ? lockedClass : normalClass,
+                                       @required = "required",
+                                       @placeholder = "Ví dụ: Nguyễn Văn A",
+                                       @readonly = isLoggedIn ? "readonly" : null
+                                   }
+                               }
+                                        )
+                                    @if (isLoggedIn)
+                                    {<i class="fa fa-lock position-absolute text-muted" style="right: 15px; top: 12px;" title="Đã xác thực"></i>}
                                 </div>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <div class="position-relative">
-                                    @Html.EditorFor(model => model.SDTNguoiNhan, new { htmlAttributes = new { 
-                                        @class = isLoggedIn ? lockedClass : normalClass,
-                                        @required = "required",
-                                        @placeholder = "Ví dụ: 0912345678",
-                                        @readonly = isLoggedIn ? "readonly" : null
-                                    }})
-                                    @if (isLoggedIn) { <i class="fa fa-lock position-absolute text-muted" style="right: 15px; top: 12px;" title="Đã xác thực"></i> }
+                                    @Html.EditorFor(model => model.SDTNguoiNhan, new
+                               {
+                                   htmlAttributes = new
+                                   {
+                                       @class = isLoggedIn ? lockedClass : normalClass,
+                                       @required = "required",
+                                       @placeholder = "Ví dụ: 0912345678",
+                                       @readonly = isLoggedIn ? "readonly" : null
+                                   }
+                               })
+                                    @if (isLoggedIn)
+                                    {<i class="fa fa-lock position-absolute text-muted" style="right: 15px; top: 12px;" title="Đã xác thực"></i>}
                                 </div>
                             </div>
 
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Địa chỉ nhận hàng <span class="text-danger">*</span></label>
-                                <textarea name="DiaChiNhan" class="@normalClass" rows="3" 
+                                <textarea name="DiaChiNhan" class="@normalClass" rows="3"
                                           placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện..." required>@Model.DiaChiNhan</textarea>
                                 @if (isLoggedIn)
                                 {
                                     <small class="text-muted mt-2 d-block">
-                                        <i class="fa fa-info-circle"></i> Bạn có thể cập nhật địa chỉ giao hàng cho đơn này.
+                                        <i class="fa fa-info-circle"></i> Bạn có thể cập nhật địa chỉ giao hàng mới cho đơn này.
                                     </small>
                                 }
                             </div>
@@ -199,16 +238,22 @@
                                 {
                                     <div class="d-flex align-items-center mb-3 border-bottom pb-3">
                                         <div style="position: relative;">
-                                            <img src="@Url.Content("~/Images/Products/" + (item.SanPham?.AnhSP ?? "no-image.png"))" 
+                                            <img src="@Url.Content("~/Images/Products/" + (item.BienTheSanPham?.SanPham?.AnhSP ?? "no-image.png"))"
                                                  style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
-                                            <span class="badge badge-secondary rounded-circle" 
+
+                                            <span class="badge badge-secondary rounded-circle"
                                                   style="position: absolute; top: -5px; right: 5px; width: 20px; height: 20px; padding: 0; line-height: 20px;">
                                                 @item.SoLuong
                                             </span>
                                         </div>
                                         <div style="flex-grow: 1;">
-                                            <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">@(item.SanPham?.TenSanPham ?? "Sản phẩm")</h6>
-                                            <small class="text-muted">Size: @item.MaSize | Màu: @item.MaMau</small>
+                                            <h6 class="mb-0 font-weight-bold" style="font-size: 0.9rem;">
+                                                @(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Sản phẩm")
+                                            </h6>
+                                            <small class="text-muted">
+                                                Size: @(item.BienTheSanPham?.KichThuoc?.TenSize ?? "-") |
+                                                Màu: @(item.BienTheSanPham?.MauSac?.TenMau ?? "-")
+                                            </small>
                                         </div>
                                         <div class="font-weight-bold">
                                             @string.Format("{0:N0} ₫", (item.DonGia ?? 0) * (item.SoLuong ?? 0))
@@ -252,10 +297,7 @@
 
 <script>
     function selectPayment(id) {
-        // Reset style
         document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
-
-        // Active current
         const selected = document.getElementById(id);
         selected.checked = true;
         selected.closest('.payment-option').classList.add('active');

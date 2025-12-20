@@ -17,18 +17,14 @@ namespace ESHOPPER.Controllers
 
         public CategoryAPIController()
         {
-            // Tắt Proxy để tránh lỗi vòng lặp (Circular Reference) khi serialize JSON
             db.Configuration.ProxyCreationEnabled = false;
         }
 
-        // GET: api/CategoryAPI
         public IQueryable<DanhMucSanPham> GetDanhMucSanPhams()
         {
             return db.DanhMucSanPhams;
         }
 
-        // GET: api/CategoryAPI/5
-        // SỬA: Đổi string id -> int id
         [ResponseType(typeof(DanhMucSanPham))]
         public IHttpActionResult GetDanhMucSanPham(int id)
         {
@@ -41,7 +37,6 @@ namespace ESHOPPER.Controllers
             return Ok(danhMucSanPham);
         }
 
-        // PUT: api/CategoryAPI/5
         [ResponseType(typeof(void))]
         public IHttpActionResult PutDanhMucSanPham(int id, DanhMucSanPham danhMucSanPham)
         {
@@ -76,7 +71,6 @@ namespace ESHOPPER.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
-        // POST: api/CategoryAPI
         [ResponseType(typeof(DanhMucSanPham))]
         public IHttpActionResult PostDanhMucSanPham(DanhMucSanPham danhMucSanPham)
         {
@@ -93,8 +87,6 @@ namespace ESHOPPER.Controllers
             }
             catch (DbUpdateException)
             {
-                // Logic này chỉ chạy nếu bạn TỰ NHẬP ID bằng tay. 
-                // Nếu ID là tự tăng (Identity) thì nó sẽ không bao giờ trùng.
                 if (DanhMucSanPhamExists(danhMucSanPham.MaDM))
                 {
                     return Conflict();
@@ -108,8 +100,6 @@ namespace ESHOPPER.Controllers
             return CreatedAtRoute("DefaultApi", new { id = danhMucSanPham.MaDM }, danhMucSanPham);
         }
 
-        // DELETE: api/CategoryAPI/5
-        // SỬA: Đổi string id -> int id
         [ResponseType(typeof(DanhMucSanPham))]
         public IHttpActionResult DeleteDanhMucSanPham(int id)
         {
@@ -118,10 +108,6 @@ namespace ESHOPPER.Controllers
             {
                 return NotFound();
             }
-
-            // Kiểm tra ràng buộc trước khi xóa (Optional)
-            // Ví dụ: Nếu danh mục đã có sản phẩm thì không cho xóa
-            // if (db.SanPhams.Any(x => x.MaDM == id)) { return BadRequest("Danh mục đã có sản phẩm!"); }
 
             db.DanhMucSanPhams.Remove(danhMucSanPham);
             db.SaveChanges();

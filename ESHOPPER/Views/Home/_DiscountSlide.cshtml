@@ -9,8 +9,8 @@
                 bool first = true;
                 foreach (var item in Model)
                 {
-                    <div class="carousel-item @(first ? "active" : "")" style="height: 410px;">
-                        <img class="img-fluid" src="@Url.Content("~/Images/intro/"+item.anh)" alt="Image">
+                    <div class="carousel-item @(first ? "active" : "")" style="height: 500px;">
+                        <img class="img-fluid" src="@Url.Content("~/Images/intro/"+item.anh)" style="object-fit:cover" alt="Image">
                         <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
                             <div class="p-3" style="max-width: 700px;">
                                 <h4 class="text-light text-uppercase font-weight-medium mb-3">@item.NameIntro</h4>

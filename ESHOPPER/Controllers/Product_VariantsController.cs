@@ -95,41 +95,77 @@ namespace ESHOPPER.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(BienTheSanPham bienThe, HttpPostedFileBase ImageUpload)
         {
+            // 1. QUAN TRỌNG: Bỏ qua kiểm tra validation của trường AnhBienThe
+            // Vì lúc submit form, trường này đang null, ta sẽ gán tên file sau.
+            if (ModelState.ContainsKey("AnhBienThe"))
+            {
+                ModelState["AnhBienThe"].Errors.Clear();
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // --- XỬ LÝ UPLOAD ẢNH (Giữ nguyên như cũ) ---
+                    // --- XỬ LÝ UPLOAD ẢNH ---
                     if (ImageUpload != null && ImageUpload.ContentLength > 0)
                     {
+                        // Kiểm tra đuôi file (Security)
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                        var extension = Path.GetExtension(ImageUpload.FileName).ToLower();
+
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            ModelState.AddModelError("AnhBienThe", "Chỉ chấp nhận file ảnh (.jpg, .png, .gif)");
+                            goto ErrorHandler; // Nhảy xuống phần xử lý lỗi
+                        }
+
                         string fileName = Path.GetFileNameWithoutExtension(ImageUpload.FileName);
-                        string extension = Path.GetExtension(ImageUpload.FileName);
+                        // Tạo tên file ngẫu nhiên để tránh trùng
                         fileName = fileName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + extension;
-                        string path = Path.Combine(Server.MapPath("~/Content/Images/"), fileName);
+
+                        // Đường dẫn lưu: ~/Images/Products/ (Khớp với View hiển thị)
+                        string folderPath = Server.MapPath("~/Images/Product_Variants/");
+
+                        // TỰ ĐỘNG TẠO THƯ MỤC NẾU CHƯA CÓ
+                        if (!Directory.Exists(folderPath))
+                        {
+                            Directory.CreateDirectory(folderPath);
+                        }
+
+                        string path = Path.Combine(folderPath, fileName);
                         ImageUpload.SaveAs(path);
+
+                        // Gán tên file vào Model
                         bienThe.AnhBienThe = fileName;
                     }
+                    else
+                    {
+                        // Nếu không upload ảnh, gán ảnh mặc định hoặc để trống tùy bạn
+                        // bienThe.AnhBienThe = ""; 
+                    }
 
-                    // --- XỬ LÝ DỮ LIỆU ---
+                    // --- XỬ LÝ DỮ LIỆU KHÁC ---
                     if (bienThe.MaTrangThai == null) bienThe.MaTrangThai = 1;
 
                     db.BienTheSanPhams.Add(bienThe);
                     db.SaveChanges();
 
-                    // Thành công -> Về lại danh sách biến thể của sản phẩm này
-                    return RedirectToAction("Index", new { id= bienThe.MaSP });
+                    return RedirectToAction("Index", new { id = bienThe.MaSP });
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                    ModelState.AddModelError("", "Lỗi khi lưu dữ liệu: " + ex.Message);
                 }
             }
 
-            // --- NẾU CÓ LỖI: PHẢI LOAD LẠI THÔNG TIN SẢN PHẨM CHA ---
+        // --- Label ErrorHandler: Dùng để load lại dữ liệu khi có lỗi ---
+        ErrorHandler:
+
+            // Load lại thông tin cần thiết cho View
             var parentProduct = db.SanPhams.Find(bienThe.MaSP);
             ViewBag.TenSanPham = parentProduct != null ? parentProduct.TenSanPham : "Sản phẩm";
 
-            // Load lại Dropdown Màu/Size
+            // Giữ nguyên giá trị người dùng đã chọn
             ViewBag.MaMau = new SelectList(db.MauSacs, "MaMau", "TenMau", bienThe.MaMau);
             ViewBag.MaSize = new SelectList(db.KichThuocs, "MaSize", "TenSize", bienThe.MaSize);
 
@@ -189,7 +225,7 @@ namespace ESHOPPER.Controllers
                         fileName = fileName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + extension;
 
                         // Lưu file
-                        string path = Path.Combine(Server.MapPath("~/Content/Images/"), fileName);
+                        string path = Path.Combine(Server.MapPath("~/Images/Product_Variants/"), fileName);
                         ImageUpload.SaveAs(path);
 
                         // Cập nhật tên ảnh mới vào Model

@@ -21,38 +21,56 @@ namespace ESHOPPER.Controllers.Admin
         // GET: Admin
         public ActionResult Dashboard()
         {
+            var model = new AdminViewModel();
 
+            model.TongDoanhThu = db.DonHangs
+                .Where(d => d.TrangThai == 1)
+                .Sum(d => (decimal?)d.TongTien) ?? 0;
 
-            //var vm = new AdminViewModel
-            //{
-            //    //var ProductCount = db.DanhMucSanPham.Count
-            //    // 2. TỔNG SỐ ĐƠN HÀNG
-            //    //OrderCount = db.DonHangs.Count(),
+            // Đơn hàng trong tháng hiện tại
+            var thisMonth = DateTime.Now.Month;
+            var thisYear = DateTime.Now.Year;
+            model.DonHangMoi = db.DonHangs
+                .Count(d => d.NgayDat.HasValue && d.NgayDat.Value.Month == thisMonth && d.NgayDat.Value.Year == thisYear);
 
-            //    //// 3. TỔNG SỐ KHÁCH HÀNG (Giả sử Role "Customer")
-            //    //CustomerCount = db.Users.Count(u => u.Role == "Customer"),
+            model.TongKhachHang = db.KhachHangs.Count();
+            model.TongSanPham = db.SanPhams.Count();
 
-            //    //// 4. TỔNG DOANH THU (Chỉ tính đơn hàng đã giao)
-            //    //TotalRevenue = db.DonHangs
-            //    //               .Where(dh => dh.TrangThai == "Đã giao")
-            //    //               .Sum(dh => (decimal?)dh.TongTien) ?? 0,
+            // --- 2. BIỂU ĐỒ DOANH THU (12 THÁNG) ---
+            model.ChartDoanhThu = new List<decimal>();
+            model.ChartLabelThang = new List<string>();
 
-            //    //// 5. ĐƠN HÀNG GẦN ĐÂY (Cho bảng phía dưới)
-            //    //RecentOrders = db.DonHangs
-            //    //               .OrderByDescending(dh => dh.NgayDat)
-            //    //               .Take(5) // Chỉ lấy 5 đơn hàng
-            //    //               .ToList(),
+            for (int i = 1; i <= 12; i++)
+            {
+                model.ChartLabelThang.Add("T" + i);
+                // Tính tổng tiền theo từng tháng của năm nay
+                var revenue = db.DonHangs
+                    .Where(d => d.NgayDat.HasValue && d.NgayDat.Value.Month == i && d.NgayDat.Value.Year == thisYear && d.TrangThai == 1)
+                    .Sum(d => (decimal?)d.TongTien) ?? 0;
 
-            //    //// 6. THỐNG KÊ NHANH (Ví dụ)
-            //    //PendingOrders = db.DonHangs.Count(dh => dh.TrangThai == "Đang xử lý"),  
-            //    //TopSellingProduct = "Áo Sơ Mi",
-            //    //NewCustomersThisMonth = db.Users
-            //    //                    .Count(u => u.Role == "Customer" &&
-            //    //                                u.CreatedAt.Value.Month == System.DateTime.Now.Month &&
-            //    //                                u.CreatedAt.Value.Year == System.DateTime.Now.Year)
-            //};
+                // Chia cho 1.000.000 để biểu đồ hiển thị đơn vị Triệu
+                model.ChartDoanhThu.Add(revenue / 1000000m);
+            }
 
-            return View();
+            // --- 3. BIỂU ĐỒ TỶ LỆ DANH MỤC (Top 5 danh mục nhiều sp nhất) ---
+            var categoryStats = db.SanPhams
+                .GroupBy(p => p.DanhMucSanPham.TenDanhMuc)
+                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(5)
+                .ToList();
+
+            model.ChartLabelDanhMuc = categoryStats.Select(x => x.Name).ToList();
+            model.ChartDataDanhMuc = categoryStats.Select(x => x.Count).ToList();
+
+            // --- 4. ĐƠN HÀNG GẦN ĐÂY (Lấy 5 đơn mới nhất) ---
+            model.ListDonHangMoi = db.DonHangs
+                .OrderByDescending(d => d.NgayDat)
+                .Take(5)
+                .Include(d => d.KhachHang) // Join bảng khách hàng để lấy tên
+                .ToList();
+
+            return View(model);
         }
 
         public ActionResult ProductList()
@@ -92,19 +110,44 @@ namespace ESHOPPER.Controllers.Admin
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ProductCreate([Bind(Include = "MaSP,MaDM,TenSanPham,MoTa,GiaBanLe,TrangThai,AnhSP,MaNCC")] SanPham sanPham)
+        public ActionResult ProductCreate(SanPham sanPham, HttpPostedFileBase ImageUpload) 
         {
             if (ModelState.IsValid)
             {
+                // 1. Xử lý lưu ảnh
+                if (ImageUpload != null && ImageUpload.ContentLength > 0)
+                {
+                    // Lấy tên file
+                    string fileName = System.IO.Path.GetFileName(ImageUpload.FileName);
+
+                    // (Tùy chọn) Thêm timestamp để tránh trùng tên file
+                    // fileName = DateTime.Now.ToString("yyyyMMddHHmmss") + "_" + fileName;
+
+                    // Đường dẫn lưu file (Thư mục ~/Images/Products/ phải tồn tại)
+                    string path = System.IO.Path.Combine(Server.MapPath("~/Images/Products/"), fileName);
+
+                    // Lưu file lên server
+                    ImageUpload.SaveAs(path);
+
+                    // Cập nhật tên file vào model để lưu xuống DB
+                    sanPham.AnhSP = fileName;
+                }
+                else
+                {
+                    // (Tùy chọn) Gán ảnh mặc định nếu không upload
+                    sanPham.AnhSP = "default.png";
+                }
+
+                // 2. Lưu sản phẩm vào Database
                 db.SanPhams.Add(sanPham);
                 db.SaveChanges();
+
                 return RedirectToAction("ProductList");
             }
 
-            ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenDanhMuc", sanPham.MaDM);
+            // Nếu model lỗi, load lại dropdownlist
+            ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenLoai", sanPham.MaDM);
             ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC", sanPham.MaNCC);
-            ViewBag.MaSP = new SelectList(db.SanPhams, "MaSP", "MaDM", sanPham.MaSP);
-            ViewBag.MaSP = new SelectList(db.SanPhams, "MaSP", "MaDM", sanPham.MaSP);
             return View(sanPham);
         }
 

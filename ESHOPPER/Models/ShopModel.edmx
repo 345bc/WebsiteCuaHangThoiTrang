@@ -901,6 +901,21 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+<<<<<<<< HEAD:ESHOPPER/Models/ShopModel.edmx
+========
+        <Association Name="FK_SanPham_SanPham">
+          <End Role="SanPham" Type="Self.SanPham" Multiplicity="1" />
+          <End Role="SanPham1" Type="Self.SanPham" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="SanPham">
+              <PropertyRef Name="MaSP" />
+            </Principal>
+            <Dependent Role="SanPham1">
+              <PropertyRef Name="MaSP" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+>>>>>>>> 71d8c8b3c87a91b3f2b6d94d9f2cb7df157358cd:ESHOPPER/Models/QlyFashionShopEntities.edmx
         <EntityContainer Name="QlyFashionShopEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="BienTheSanPhams" EntityType="Self.BienTheSanPham" />
           <EntitySet Name="ChiTietDonHangs" EntityType="Self.ChiTietDonHang" />

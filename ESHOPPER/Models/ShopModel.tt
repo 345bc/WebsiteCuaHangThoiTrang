@@ -2,7 +2,11 @@
 <#@ include file="EF6.Utility.CS.ttinclude"#><#@ 
  output extension=".cs"#><#
 
+<<<<<<<< HEAD:ESHOPPER/Models/ShopModel.tt
 const string inputFile = @"ShopModel.edmx";
+========
+const string inputFile = @"QlyFashionShopEntities.edmx";
+>>>>>>>> 71d8c8b3c87a91b3f2b6d94d9f2cb7df157358cd:ESHOPPER/Models/QlyFashionShopEntities.tt
 var textTransform = DynamicTextTransformation.Create(this);
 var code = new CodeGenerationTools(this);
 var ef = new MetadataTools(this);

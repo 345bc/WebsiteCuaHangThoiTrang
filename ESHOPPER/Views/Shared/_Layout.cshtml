@@ -19,73 +19,67 @@
     <link href="~/Content/css/footer.css" rel="stylesheet" />
     <link href="~/Content/css/Home.css" rel="stylesheet" />
     <style>
-     /* --- Cấu hình chung --- */
-.auth-actions .btn-auth {
-    padding: 8px 24px;       /* Tăng chiều ngang một chút cho thoáng */
-    border-radius: 4px;      /* Giữ nguyên bo góc nhẹ (vuông vắn, hiện đại) */
-    font-weight: 600;        /* Chữ đậm hơn để dễ đọc */
-    font-size: 13px;         /* Size chữ gọn gàng */
-    text-transform: uppercase; /* Viết hoa toàn bộ -> Rất phổ biến trong Fashion Ecommerce */
-    letter-spacing: 1px;     /* Khoảng cách chữ rộng ra cho sang */
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: inline-block;
-}
+        .auth-actions .btn-auth {
+            padding: 8px 24px; /* Tăng chiều ngang một chút cho thoáng */
+            border-radius: 4px; /* Giữ nguyên bo góc nhẹ (vuông vắn, hiện đại) */
+            font-weight: 600; /* Chữ đậm hơn để dễ đọc */
+            font-size: 13px; /* Size chữ gọn gàng */
+            text-transform: uppercase; /* Viết hoa toàn bộ -> Rất phổ biến trong Fashion Ecommerce */
+            letter-spacing: 1px; /* Khoảng cách chữ rộng ra cho sang */
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
 
-/* --- Nút Login (Tinh tế) --- */
-.auth-actions .btn-login {
-    color: #333;             /* Màu đen khói */
-    background: transparent;
-    border: 1px solid #e0e0e0;
-    margin-right: 10px;      /* Cách nút Register ra 1 chút */
-}
+        /* --- Nút Login (Tinh tế) --- */
+        .auth-actions .btn-login {
+            color: #333; /* Màu đen khói */
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            margin-right: 10px; /* Cách nút Register ra 1 chút */
+        }
 
-.auth-actions .btn-login:hover {
-    color: #D19C97;          /* Hover đổi màu chữ sang màu chủ đạo */
-    border-color: #D19C97;   /* Viền cũng đổi màu */
-    background: #fff;
-}
+            .auth-actions .btn-login:hover {
+                color: #D19C97; /* Hover đổi màu chữ sang màu chủ đạo */
+                border-color: #D19C97; /* Viền cũng đổi màu */
+                background: #fff;
+            }
 
-/* --- Nút Register (Điểm nhấn chính - Hero Button) --- */
-.auth-actions .btn-register {
-    background-color: #D19C97; /* Màu hồng cam đất chủ đạo */
-    color: #fff;
-    border: 1px solid #D19C97;
+        /* --- Nút Register (Điểm nhấn chính - Hero Button) --- */
+        .auth-actions .btn-register {
+            background-color: #D19C97; /* Màu hồng cam đất chủ đạo */
+            color: #fff;
+            border: 1px solid #D19C97;
+            /* Đổ bóng màu cùng tone để tạo hiệu ứng "Glow" nổi bật */
+            box-shadow: 0 4px 15px rgba(209, 156, 151, 0.5);
+        }
 
-    /* Đổ bóng màu cùng tone để tạo hiệu ứng "Glow" nổi bật */
-    box-shadow: 0 4px 15px rgba(209, 156, 151, 0.5);
-}
+            .auth-actions .btn-register:hover {
+                background-color: #c78681; /* Đậm hơn khi hover */
+                border-color: #c78681;
+                color: #fff;
+                /* Khi hover thì nút nhấc lên và bóng đậm hơn */
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(209, 156, 151, 0.7);
+            }
 
-.auth-actions .btn-register:hover {
-    background-color: #c78681; /* Đậm hơn khi hover */
-    border-color: #c78681;
-    color: #fff;
+        
 
-    /* Khi hover thì nút nhấc lên và bóng đậm hơn */
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(209, 156, 151, 0.7);
+        /*else {
+            @@media (max-width: 991px) {
+                .auth-actions {
+                    margin-top: 15px;
+                    margin-left: 0 !important;
+                    justify-content: center;
+                    width: 100%;
                 }
-            } else {
-                // TRƯỜNG HỢP: CHƯA ĐĂNG NHẬP (GUEST)
-                // Quan trọng: Xóa class dropdown để nút bấm hoạt động như link thường
-                dropdown.classList.remove('dropdown');
+            }*/
 
-/* Responsive: Trên Mobile thì chỉnh lại margin cho đẹp */
-@@media (max-width: 991px) {
-    .auth-actions {
-        margin-top: 15px;
-        margin-left: 0 !important;
-        justify-content: center;
-        width: 100%;
-/*            }
-
-            // Xử lý sự kiện Logout
-            document.body.addEventListener("click", (e) => {
+/*            document.body.addEventListener("click", (e) => {
                 if (e.target.id === "logoutBtn" || e.target.closest('#logoutBtn')) {
                     e.preventDefault();
                     localStorage.removeItem("jwtToken");
-                    window.location.href = "/";
-                }*/
+                    window.location.href = "/";}}*/
     </style>
 </head>
 
@@ -93,7 +87,6 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3 container-fluid px-5">
         <div class="container-fluid px-5">
             <a href="@Url.Action("Index", "Home")" class="navbar-brand d-flex align-items-center">
-                @*<span class="h1 font-weight-bold text-primary text-uppercase mb-0 mr-1">e</span>*@
                 <span class="h1 font-weight-bold text-dark text-uppercase mb-0" style="letter-spacing: 2px;">ZELLA</span>
             </a>
 
@@ -114,13 +107,8 @@
                 <div class="d-flex align-items-center">
                     <a href="@Url.Action("Cart", "Home")" class="btn position-relative border-0 p-0 mr-3">
                         <i class="fas fa-shopping-cart text-primary"></i>
-                        <span id="cartBadge" class="badge badge-danger rounded-circle position-absolute"
-                              style="top: -5px; right: -8px; font-size: 10px; padding: 3px 5px;">
-                            @* Bạn có thể thay số 0 bằng @Session["CartCount"] nếu có xử lý *@
-                            0
-                        </span>
+                        @Html.Action("CartBadge", "Home")
                     </a>
-
                     @if (Session["UserName"] != null)
                     {
                         // TRƯỜNG HỢP: ĐÃ ĐĂNG NHẬP
@@ -222,22 +210,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="footer-bottom">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6 text-center text-md-left mb-3 mb-md-0">
-                        @*<p class="m-0">
-                            &copy; <a class="text-white font-weight-bold" href="#">ZELLA</a>. All Rights Reserved.
-                            Designed by <a class="text-white font-weight-bold" href="#">Nhom 4</a>
-                        </p>*@
-                    </div>
-                    <div class="col-md-6 text-center text-md-right">
-                        @*<img class="img-fluid" src="~/Images/payments.png" alt="Payments" style="max-height: 30px;">*@
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
 
@@ -252,7 +224,6 @@
     <script src="~/Scripts/mail/contact.js"></script>
     <script src="~/Scripts/js/main.js"></script>
 
-    @* Đã xóa script xử lý JWT ở đây *@
     @RenderSection("Scripts", required: false)
 </body>
 </html>

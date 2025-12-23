@@ -401,7 +401,7 @@
 
             <div class="col-lg-5">
                 <div class="pd-info">
-                    <div class="pd-brand">ESHOPPER ORIGINAL</div>
+                    <div class="pd-brand">ZELLA ORIGINAL</div>
 
                     <h1 class="pd-title">@Model.SanPhamChinh.TenSanPham</h1>
 
@@ -513,31 +513,40 @@
 <div class="related-sec">
     <div class="container-fluid px-5">
         <h3 class="sec-title">Sản phẩm tương tự</h3>
-        <div class="row px-xl-5 pb-3">
+        <div class="row px-xl-5 pb-3 row-cols-lg-5 row-cols-md-3 row-cols-sm-2 row-cols-1 g-3">
+
             @foreach (var item in Model.SanPhamNgauNhiens)
             {
-                <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                <div class="col">
                     <div class="product-card-modern">
-                        <div class="product-img-wrap">
-                            <img src="@Url.Content("~/Images/Products/" + item.AnhSP)" alt="@item.TenSanPham">
 
-                            <disv class="product-actions">
-                                <a href="@Url.Action("ProductDetails", "Home", new { id = item.MaSP })" class="btn-action" title="View Detail">
+                        <div class="product-img-wrap">
+                            <img src="@Url.Content("~/Images/Products/" + item.AnhSP)"
+                                 alt="@item.TenSanPham">
+
+                            <div class="product-actions">
+                                <a href="@Url.Action("ProductDetails", "Home", new { id = item.MaSP })"
+                                   class="btn-action" title="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                            </disv>
+                            </div>
                         </div>
+
                         <div class="product-info">
-                            <a href="@Url.Action("ProductDetails", "Home", new { id = item.MaSP })" class="text-decoration-none">
+                            <a href="@Url.Action("ProductDetails", "Home", new { id = item.MaSP })"
+                               class="text-decoration-none">
                                 <h6 class="product-name">@item.TenSanPham</h6>
                             </a>
+
                             <div class="product-price">
                                 @String.Format("{0:N0} ₫", item.GiaBanLe)
                             </div>
                         </div>
+
                     </div>
                 </div>
             }
+
         </div>
     </div>
 </div>

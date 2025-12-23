@@ -235,14 +235,13 @@
 
                 checkboxes.forEach(chk => {
                     if (chk.checked) {
-                        // Lấy giá trị từ data-total (đã render từ server)
                         total += parseFloat(chk.getAttribute('data-total'));
                         count++;
                     }
                 });
 
                 // Format tiền tệ Việt Nam
-                totalEl.textContent = total.toLocaleString('vi-VN') + ' ₫';
+                totalEl.textContent = total.toLocaleString('vi-VN') + ' VNĐ';
                 countEl.textContent = count + ' món';
             }
 
@@ -300,7 +299,7 @@
                         title: 'Bạn chưa đăng nhập',
                         text: "Đăng nhập để lưu đơn hàng vào tài khoản của bạn?",
                         icon: 'info',
-                        showCancelButton: true,
+                        //showCancelButton: true,
                         confirmButtonColor: '#222',
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Đăng nhập ngay',

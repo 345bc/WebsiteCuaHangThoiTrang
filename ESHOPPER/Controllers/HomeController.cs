@@ -20,7 +20,7 @@ namespace ESHOPPER.Controllers.WebPage
                 DanhMucSanPhams = db.DanhMucSanPhams.ToList(),
                 nhaCungCaps = db.NhaCungCaps.ToList(),
                 SanPhams = db.SanPhams
-                        .OrderByDescending(p => p.MaSP) // MaSP giờ là int, sort vẫn ok
+                        .OrderByDescending(p => p.MaSP) 
                         .Take(16)
                         .ToList(),
                 SanPhamNgauNhiens = db.SanPhams
@@ -32,29 +32,6 @@ namespace ESHOPPER.Controllers.WebPage
             return View(vm);
         }
 
-        [ChildActionOnly]
-        public ActionResult CategoryMenu()
-        {
-            var model = db.DanhMucSanPhams.ToList();
-            return PartialView("ParCategories", model);
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            var model = new HomeViewModel
-            {
-                DanhMucSanPhams = db.DanhMucSanPhams.ToList()
-            };
-            return View(model);
-        }
-
-        // [SỬA]: categoryId đổi sang int?
         public ActionResult Shop(string searchString, string sortOrder, string priceRange, int? categoryId, int page = 1)
         {
             int pageSize = 9;
@@ -77,10 +54,10 @@ namespace ESHOPPER.Controllers.WebPage
             {
                 switch (priceRange)
                 {
-                    case "0-100": products = products.Where(p => p.GiaBanLe >= 0 && p.GiaBanLe < 100); break;
-                    case "100-200": products = products.Where(p => p.GiaBanLe >= 100 && p.GiaBanLe < 200); break;
-                        // Các case giá tiền cần điều chỉnh lại cho phù hợp thực tế (vì DB để giá hàng triệu)
-                        // Ví dụ demo giữ nguyên logic cũ
+                    case "1": products = products.Where(p => p.GiaBanLe >= 100000 && p.GiaBanLe < 500000); break;
+                    case "2": products = products.Where(p => p.GiaBanLe >= 500000 && p.GiaBanLe < 1000000); break;
+                    case "3": products = products.Where(p => p.GiaBanLe >= 1000000 && p.GiaBanLe < 2000000); break;
+                    case "4": products = products.Where(p => p.GiaBanLe >= 2000000); break;
                 }
             }
 
@@ -122,23 +99,19 @@ namespace ESHOPPER.Controllers.WebPage
                 return HttpNotFound();
             }
 
-            // 2. Lấy danh sách tất cả biến thể của sản phẩm này
             var listBienThe = db.BienTheSanPhams.Where(b => b.MaSP == id).ToList();
 
             // 3. Lấy danh sách các Mã Size và Mã Màu xuất hiện trong biến thể (loại bỏ null)
             var sizeIds = listBienThe.Where(b => b.MaSize.HasValue).Select(b => b.MaSize.Value).Distinct().ToList();
             var colorIds = listBienThe.Where(b => b.MaMau.HasValue).Select(b => b.MaMau.Value).Distinct().ToList();
 
-            // 4. Truy vấn bảng KichThuoc và MauSac dựa trên danh sách ID đã lấy
-            // Điều này thay thế cho việc dùng .Include() khi Model không có Navigation Property
             var sizes = db.KichThuocs.Where(s => sizeIds.Contains(s.MaSize)).OrderBy(s => s.TenSize).ToList();
             var colors = db.MauSacs.Where(c => colorIds.Contains(c.MaMau)).ToList();
 
-            // 5. Lấy sản phẩm gợi ý ngẫu nhiên
             var randomProducts = db.SanPhams
                 .Where(s => s.MaSP != id && s.TrangThai == "Hoạt động")
                 .OrderBy(r => Guid.NewGuid())
-                .Take(4)
+                .Take(5)
                 .ToList();
 
             // 6. Đóng gói vào ViewModel
@@ -181,77 +154,75 @@ namespace ESHOPPER.Controllers.WebPage
             return View(danhSach);
         }
 
-        // [SỬA]: Các tham số chuyển sang int
         [HttpPost]
-[ValidateAntiForgeryToken]
-public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize = null, int? selectedColor = null)
-{
-    try
-    {
-        // 1. Kiểm tra số lượng hợp lệ
-        if (quantity < 1) quantity = 1;
-
-        // 2. Kiểm tra sản phẩm gốc tồn tại
-        var sanPham = db.SanPhams.FirstOrDefault(p => p.MaSP == productId);
-        if (sanPham == null)
+        [ValidateAntiForgeryToken]
+        public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize = null, int? selectedColor = null)
         {
-            TempData["ErrorMessage"] = "Sản phẩm không tồn tại.";
-            return RedirectToAction("Index", "Home");
-        }
-
-        // 3. Tìm biến thể (Variant) dựa trên Màu và Size đã chọn
-        var bienThe = db.BienTheSanPhams.FirstOrDefault(b =>
-            b.MaSP == productId &&
-            b.MaSize == selectedSize &&
-            b.MaMau == selectedColor);
-
-        // Nếu khách chưa chọn đủ thuộc tính dẫn đến không xác định được biến thể
-        if (bienThe == null)
-        {
-            TempData["ErrorMessage"] = "Vui lòng chọn đầy đủ Kích thước và Màu sắc hợp lệ.";
-            return RedirectToAction("ProductDetails", new { id = productId });
-        }
-
-        // Xác định đơn giá (Ưu tiên giá biến thể, nếu không có lấy giá lẻ sản phẩm)
-        decimal donGia = bienThe.GiaBan ?? sanPham.GiaBanLe ?? 0;
-
-        // --- TRƯỜNG HỢP 1: NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP (Lưu vào Database) ---
-        if (Session["MaKH"] != null)
-        {
-            int maKH = (int)Session["MaKH"];
-
-            // Tìm hoặc tạo mới Giỏ hàng cho khách hàng
-            var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
-            if (gioHang == null)
+            try
             {
-                gioHang = new GioHang { MaKH = maKH, NgayTao = DateTime.Now };
-                db.GioHangs.Add(gioHang);
-                db.SaveChanges();
-            }
+                // 1. Kiểm tra số lượng hợp lệ
+                if (quantity < 1) quantity = 1;
 
-            // Tìm chi tiết giỏ hàng theo MaBienThe (Cấu trúc mới tập trung vào MaBienThe)
-            var chiTiet = db.ChiTietGioHangs.FirstOrDefault(c =>
-                c.MaGioHang == gioHang.MaGioHang &&
-                c.MaBienThe == bienThe.MaBienThe);
-
-            if (chiTiet != null)
-            {
-                chiTiet.SoLuong += quantity;
-                chiTiet.DonGia = donGia; // Cập nhật lại giá mới nhất
-            }
-            else
-            {
-                db.ChiTietGioHangs.Add(new ChiTietGioHang
+                // 2. Kiểm tra sản phẩm gốc tồn tại
+                var sanPham = db.SanPhams.FirstOrDefault(p => p.MaSP == productId);
+                if (sanPham == null)
                 {
-                    MaGioHang = gioHang.MaGioHang,
-                    MaBienThe = bienThe.MaBienThe, // Chỉ lưu MaBienThe theo đúng Model mới
-                    SoLuong = quantity,
-                    DonGia = donGia
-                });
-            }
-            db.SaveChanges();
-        }
-                // Trong HomeController.cs -> AddToCart
+                    TempData["ErrorMessage"] = "Sản phẩm không tồn tại.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // 3. Tìm biến thể (Variant) dựa trên Màu và Size đã chọn
+                var bienThe = db.BienTheSanPhams.FirstOrDefault(b =>
+                    b.MaSP == productId &&
+                    b.MaSize == selectedSize &&
+                    b.MaMau == selectedColor);
+
+                // Nếu khách chưa chọn đủ thuộc tính dẫn đến không xác định được biến thể
+                if (bienThe == null)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng chọn đầy đủ Kích thước và Màu sắc hợp lệ.";
+                    return RedirectToAction("ProductDetails", new { id = productId });
+                }
+
+                // Xác định đơn giá (Ưu tiên giá biến thể, nếu không có lấy giá lẻ sản phẩm)
+                decimal donGia = bienThe.GiaBan ?? sanPham.GiaBanLe ?? 0;
+
+                // --- TRƯỜNG HỢP 1: NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP (Lưu vào Database) ---
+                if (Session["MaKH"] != null)
+                {
+                    int maKH = (int)Session["MaKH"];
+
+                    // Tìm hoặc tạo mới Giỏ hàng cho khách hàng
+                    var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+                    if (gioHang == null)
+                    {
+                        gioHang = new GioHang { MaKH = maKH, NgayTao = DateTime.Now };
+                        db.GioHangs.Add(gioHang);
+                        db.SaveChanges();
+                    }
+
+                    // Tìm chi tiết giỏ hàng theo MaBienThe (Cấu trúc mới tập trung vào MaBienThe)
+                    var chiTiet = db.ChiTietGioHangs.FirstOrDefault(c =>
+                        c.MaGioHang == gioHang.MaGioHang &&
+                        c.MaBienThe == bienThe.MaBienThe);
+
+                    if (chiTiet != null)
+                    {
+                        chiTiet.SoLuong += quantity;
+                        chiTiet.DonGia = donGia; // Cập nhật lại giá mới nhất
+                    }
+                    else
+                    {
+                        db.ChiTietGioHangs.Add(new ChiTietGioHang
+                        {
+                            MaGioHang = gioHang.MaGioHang,
+                            MaBienThe = bienThe.MaBienThe, // Chỉ lưu MaBienThe theo đúng Model mới
+                            SoLuong = quantity,
+                            DonGia = donGia
+                        });
+                    }
+                    db.SaveChanges();
+                }
                 else // Trường hợp Khách vãng lai
                 {
                     List<ChiTietGioHang> cart = Session["Cart"] as List<ChiTietGioHang> ?? new List<ChiTietGioHang>();
@@ -281,29 +252,73 @@ public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize
                     Session["Cart"] = cart;
                 }
 
-                TempData["SuccessMessage"] = "Đã thêm sản phẩm vào giỏ hàng thành công!";
-        return RedirectToAction("ProductDetails", new { id = productId });
-    }
-    catch (Exception ex)
-    {
-        TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
-        return RedirectToAction("ProductDetails", new { id = productId });
-    }
-}
+                int currentCount = 0;
+                if (Session["MaKH"] != null)
+                {
+                    int maKH = (int)Session["MaKH"];
+                    var gh = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+                    currentCount = gh?.ChiTietGioHangs.Sum(c => c.SoLuong) ?? 0;
+                }
+                else
+                {
+                    var cartList = Session["Cart"] as List<ChiTietGioHang>;
+                    currentCount = cartList?.Sum(c => c.SoLuong) ?? 0;
+                }
 
-        private int GetCartTotalItems()
+                Session["CartCount"] = currentCount;
+
+                TempData["SuccessMessage"] = "Đã thêm sản phẩm vào giỏ hàng thành công!";
+                return RedirectToAction("ProductDetails", new { id = productId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("ProductDetails", new { id = productId });
+            }
+        }
+
+        // Đặt hàm này trong Controller (ví dụ: HomeController hoặc BaseController)
+        public   int GetCartTotalItems()
         {
+            int totalQuantity = 0;
+
+            // TRƯỜNG HỢP 1: Đã đăng nhập (Lấy từ Database)
             if (Session["MaKH"] != null)
             {
                 int maKH = (int)Session["MaKH"];
+
+                // Tìm giỏ hàng của khách
                 var gioHang = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
-                return gioHang?.ChiTietGioHangs.Sum(c => c.SoLuong) ?? 0;
+
+                if (gioHang != null)
+                {
+                    // Tính tổng cột SoLuong trong bảng ChiTietGioHang
+                    // Sử dụng (c.SoLuong ?? 0) để an toàn nếu cột này cho phép null trong DB
+                    totalQuantity = gioHang.ChiTietGioHangs.Sum(c => c.SoLuong) ?? 0;
+                }
             }
+            // TRƯỜNG HỢP 2: Khách vãng lai (Lấy từ Session)
             else
             {
-                var gioHang = Session["Cart"] as GioHang;
-                return gioHang?.TongSoLuong() ?? 0; // Giả sử TongSoLuong() đã sửa logic tính toán
+                // Ép kiểu Session về List<ChiTietGioHang>
+                var cart = Session["Cart"] as List<ChiTietGioHang>;
+
+                if (cart != null)
+                {
+                    // Tính tổng số lượng các item trong list
+                    totalQuantity = cart.Sum(c => c.SoLuong) ?? 0;
+                }
             }
+
+            return totalQuantity;
+        }
+
+        // --- ACTION GỌI TỪ VIEW ---
+        [ChildActionOnly]
+        public ActionResult CartBadge()
+        {
+            int count = GetCartTotalItems();
+            return PartialView("_CartBadge", count);
         }
 
         // [SỬA]: Tham số int
@@ -433,17 +448,6 @@ public ActionResult AddToCart(int productId, int quantity = 1, int? selectedSize
             return PartialView("_CartSummary");
         }
 
-        // [SỬA]: Hàm này xử lý xóa khỏi giỏ sau khi mua
-        private void XoaSanPhamDaMuaKhoiGio(int maDH)
-        {
-            // Lấy chi tiết đơn hàng (lưu ý: Bảng này lưu ID SP nhưng lưu TÊN size/màu dạng text)
-            // Tuy nhiên, để xóa khỏi giỏ (dùng ID), ta cần map lại hoặc giả định lúc thanh toán
-            // ta đã lưu thông tin để đối chiếu.
-            // CACH TOT NHAT: Khi thanh toán thành công, ta nên dùng list `ChiTietGioHang` đã select
-            // để xóa, thay vì query ngược lại từ DonHang (vì DonHang lưu text).
-            // NHƯNG để sửa ít nhất, ta sẽ cập nhật logic ở Checkout thay vì hàm này.
-            // -> Xem phần Checkout bên dưới.
-        }
 
         [HttpGet]
         public ActionResult Checkout(string selectedIds) // selectedIds truyền vào là chuỗi: "12,15,18" (các MaBienThe)

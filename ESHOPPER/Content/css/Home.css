@@ -102,7 +102,8 @@
     font-size: 0.8rem;
 }
 
-/* Product Card - Thiết kế lại hoàn toàn */
+/*cart*/
+
 .product-card-modern {
     background: #fff;
     border-radius: 10px;
@@ -121,7 +122,7 @@
 .product-img-wrap {
     position: relative;
     overflow: hidden;
-    height: 300px; /* Ảnh cao hơn */
+    height: 400px;  
 }
 
     .product-img-wrap img {
@@ -135,7 +136,6 @@
     transform: scale(1.1);
 }
 
-/* Nút Action hiện lên khi hover */
 .product-actions {
     position: absolute;
     bottom: -50px;
@@ -192,6 +192,7 @@
     font-weight: 700;
     font-size: 1.1rem;
 }
+
 
 /* Offer Banner */
 .offer-card {

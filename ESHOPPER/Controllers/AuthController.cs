@@ -41,30 +41,21 @@ namespace ESHOPPER.Controllers.Auth
                     return View();
                 }
 
-                // 2. Tìm User trong DB (Dùng LINQ thay vì SP để dễ kiểm soát)
-                // Tìm theo Tên đăng nhập HOẶC Email
+                // 2. Tìm User
                 var user = db.Users.FirstOrDefault(u => u.Name == loginInput || u.Email == loginInput);
-
-                // 3. Kiểm tra tài khoản tồn tại
                 if (user == null)
                 {
                     ModelState.AddModelError("", "Tài khoản không tồn tại!");
                     return View();
                 }
 
-                // 4. Kiểm tra Mật khẩu (Verify Hash)
+                // 3. Kiểm tra Password (BCrypt)
                 bool isPasswordValid = false;
                 try
                 {
-                    if (!string.IsNullOrEmpty(user.PasswordHash))
-                    {
-                        isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
-                    }
+                    isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
                 }
-                catch
-                {
-                    isPasswordValid = false;
-                }
+                catch { isPasswordValid = false; }
 
                 if (!isPasswordValid)
                 {
@@ -73,244 +64,138 @@ namespace ESHOPPER.Controllers.Auth
                 }
 
                 // ====================================================
-                // 5. ĐĂNG NHẬP THÀNH CÔNG
+                // 4. ĐĂNG NHẬP THÀNH CÔNG -> SETUP SESSION
                 // ====================================================
-
-                // A. Xử lý logic nghiệp vụ (Khách hàng & Giỏ hàng)
                 int maKH = 0;
-                var userKH = db.KhachHangs.FirstOrDefault(k => k.UserId == user.UserID);
-                if (userKH != null)
-                {
-                    maKH = userKH.MaKH;
-                }
+                var khachHang = db.KhachHangs.FirstOrDefault(k => k.UserId == user.UserID);
+                if (khachHang != null) maKH = khachHang.MaKH;
 
-                // B. Lưu Session (Dùng để hiển thị thông tin nhanh trên Header)
                 Session["UserID"] = user.UserID;
-                Session["MaKH"] = maKH;
                 Session["UserName"] = user.Name;
                 Session["UserRole"] = user.Role;
+                Session["MaKH"] = maKH;
 
-                //// C. Gộp giỏ hàng từ Guest sang User (nếu có)
-                //if (Session["Cart"] != null && maKH > 0)
-                //{
-                //    MergeSessionCartToDb(maKH); // Hàm riêng của bạn
-                //}
-
-                // D. [QUAN TRỌNG NHẤT] Ghi nhận đăng nhập với hệ thống (Cookie)
-                // Dòng này giúp server nhớ bạn là ai kể cả khi Session bị timeout
                 FormsAuthentication.SetAuthCookie(user.Name, false);
 
                 // ====================================================
-                // 6. XỬ LÝ CHUYỂN HƯỚNG (REDIRECT)
+                // D. [QUAN TRỌNG] ĐỒNG BỘ GIỎ HÀNG (SESSION -> DB)
                 // ====================================================
-                //string targetUrl = "";
+                // Logic: Nếu là Khách Hàng và trong Session đang có hàng -> Đổ vào DB
+                var sessionCart = Session["Cart"] as List<ChiTietGioHang>;
 
-                // Ưu tiên 1: Nếu có returnUrl hợp lệ (VD: đang vào Admin bị đá ra login, giờ vào lại Admin)
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                if (maKH > 0 && sessionCart != null && sessionCart.Count > 0)
                 {
-                    return Redirect(returnUrl);
-                }
-                else
-                {
-                    // Ưu tiên 2: Phân quyền theo Role
-                    string currentRole = user.Role != null ? user.Role.Trim() : "";
+                    // B1: Tìm hoặc Tạo giỏ hàng trong DB
+                    var dbCart = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+                    if (dbCart == null)
+                    {
+                        dbCart = new GioHang { MaKH = maKH, NgayTao = DateTime.Now };
+                        db.GioHangs.Add(dbCart);
+                        db.SaveChanges(); // Lưu ngay để lấy MaGioHang
+                    }
 
-                    if (currentRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
-                        currentRole.Equals("Employee", StringComparison.OrdinalIgnoreCase))
+                    // B2: Duyệt từng món trong Session để đưa vào DB
+                    foreach (var itemSess in sessionCart)
                     {
-                        // Chuyển sang trang Quản trị
-                        // Nếu dùng Area: RedirectToAction("Index", "Home", new { area = "Admin" })
-                        // Nếu không dùng Area: RedirectToAction("Dashboard", "Admin")
-                        return RedirectToAction("Dashboard", "Admin");
+                        // Kiểm tra xem món này đã có trong DB chưa
+                        var dbItem = db.ChiTietGioHangs.FirstOrDefault(c =>
+                            c.MaGioHang == dbCart.MaGioHang &&
+                            c.MaBienThe == itemSess.MaBienThe);
+
+                        if (dbItem != null)
+                        {
+                            // Đã có -> Cộng dồn số lượng
+                            dbItem.SoLuong += itemSess.SoLuong;
+                            // dbItem.DonGia = itemSess.DonGia; // (Tuỳ chọn: cập nhật giá mới nhất)
+                        }
+                        else
+                        {
+                            // Chưa có -> Tạo mới (Lưu ý: Phải new object mới, không dùng lại object session)
+                            var newItem = new ChiTietGioHang
+                            {
+                                MaGioHang = dbCart.MaGioHang,
+                                MaBienThe = itemSess.MaBienThe,
+                                SoLuong = itemSess.SoLuong,
+                                DonGia = itemSess.DonGia
+                            };
+                            db.ChiTietGioHangs.Add(newItem);
+                        }
                     }
-                    else
-                    {
-                        // Khách hàng -> Về trang chủ
-                        return RedirectToAction("Index", "Home");
-                    }
+
+                    // B3: Lưu DB và Xóa Session
+                    db.SaveChanges();
+                    Session["Cart"] = null;
                 }
+
+                // Cập nhật lại số lượng hiển thị trên menu (Badge)
+                // Gọi hàm GetCartTotalItems() mà bạn đã viết ở bước trước
+                // Tính trực tiếp từ DB luôn vì lúc này đã là User rồi
+                var gioHangUser = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
+                Session["CartCount"] = gioHangUser != null ? (gioHangUser.ChiTietGioHangs.Sum(c => c.SoLuong) ?? 0) : 0;
+
+                // ====================================================
+                // 5. ĐIỀU HƯỚNG
+                // ====================================================
+                return RedirectToLocal(returnUrl, user.Role);
             }
             catch (Exception ex)
             {
-                // Ghi log lỗi nếu cần
-                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+                ModelState.AddModelError("", "Lỗi đăng nhập: " + ex.Message);
                 return View();
             }
         }
 
-        //[HttpPost]
-        //public JsonResult Login(string loginInput, string password, string returnUrl = "")
-        //{
-        //    try
-        //    {
-        //        // 1. Validate đầu vào
-        //        if (string.IsNullOrEmpty(loginInput) || string.IsNullOrEmpty(password))
-        //        {
-        //            return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin!" });
-        //        }
+        // ====================================================
+        // HELPER: Hàm điều hướng an toàn
+        // ====================================================
+        private ActionResult RedirectToLocal(string returnUrl, string role)
+        {
+            // 1. Kiểm tra nếu returnUrl rỗng thì thôi
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                return RedirectToRoleHome(role);
+            }
 
-        //        // 2. Chuẩn bị tham số Stored Procedure
-        //        // Lưu ý: Đảm bảo biến 'db' đã được khởi tạo (Entities context)
-        //        var resultParam = new ObjectParameter("Result", typeof(int));
-        //        var userIdParam = new ObjectParameter("UserID", typeof(int));
-        //        var nameParam = new ObjectParameter("Name", typeof(string));
-        //        var roleParam = new ObjectParameter("Role", typeof(string));
-        //        var passwordHashParam = new ObjectParameter("PasswordHash", typeof(string));
+            // 2. Giải mã URL (đề phòng trường hợp nó vẫn còn encode ký tự %)
+            // Ví dụ: https%3A%2F%2F -> https://
+            returnUrl = Server.UrlDecode(returnUrl);
 
-        //        // 3. Gọi Stored Procedure
-        //        db.sp_LoginUser(
-        //            loginInput,
-        //            resultParam,
-        //            userIdParam,
-        //            nameParam,
-        //            roleParam,
-        //            passwordHashParam
-        //        );
+            // 3. TRƯỜNG HỢP A: URL Tương đối (Ví dụ: /Home/Cart)
+            // Hàm IsLocalUrl của MVC chỉ chấp nhận loại này
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
 
-        //        // 4. Kiểm tra kết quả từ DB
-        //        int result = resultParam.Value != null ? (int)resultParam.Value : 0;
-        //        string storedHash = passwordHashParam.Value != null ? passwordHashParam.Value.ToString() : "";
+            // 4. TRƯỜNG HỢP B: URL Tuyệt đối (Ví dụ: https://localhost:44339/Home/Cart)
+            // Ta phải tự kiểm tra xem nó có cùng Domain với web mình không
+            Uri uriResult;
+            // Thử tạo đối tượng Uri từ chuỗi returnUrl
+            if (Uri.TryCreate(returnUrl, UriKind.Absolute, out uriResult))
+            {
+                // So sánh Authority (Domain + Port) của returnUrl với Request hiện tại
+                if (string.Equals(uriResult.Authority, Request.Url.Authority, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Redirect(returnUrl);
+                }
+            }
 
-        //        if (result == 1 || string.IsNullOrEmpty(storedHash))
-        //        {
-        //            return Json(new { success = false, message = "Tài khoản không tồn tại hoặc sai thông tin!" });
-        //        }
+            // 5. Nếu không thỏa mãn cả 2 -> Về trang chủ mặc định
+            return RedirectToRoleHome(role);
+        }
 
-        //        // 5. Verify Password
-        //        bool isPasswordValid = false;
-        //        try
-        //        {
-        //            isPasswordValid = BCrypt.Net.BCrypt.Verify(password, storedHash);
-        //        }
-        //        catch
-        //        {
-        //            isPasswordValid = false;
-        //        }
+        // Hàm phụ để code gọn hơn
+        private ActionResult RedirectToRoleHome(string role)
+        {
+            string r = role != null ? role.Trim() : "";
+            if (r.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                r.Equals("Employee", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            return RedirectToAction("Index", "Home");
+        }
 
-        //        if (!isPasswordValid)
-        //        {
-        //            return Json(new { success = false, message = "Mật khẩu không đúng!" });
-        //        }
-
-        //        // ====================================================
-        //        // 6. ĐĂNG NHẬP THÀNH CÔNG -> LƯU SESSION
-        //        // ====================================================
-        //        int userId = (int)userIdParam.Value;
-        //        string userName = nameParam.Value.ToString();
-        //        string userRole = roleParam.Value.ToString();
-
-        //        // Lấy MaKH chuẩn từ bảng KhachHang (nếu có)
-        //        int maKH = 0; 
-        //        var userKH = db.KhachHangs.FirstOrDefault(k => k.User.Name == loginInput || k.Email == loginInput);
-        //        if (userKH != null) maKH = userKH.MaKH;
-
-        //        Session["UserID"] = userId;
-        //        Session["MaKH"] = maKH;
-        //        Session["UserName"] = userName;
-        //        Session["UserRole"] = userRole;
-
-        //        // 7. GỘP GIỎ HÀNG
-        //        if (Session["Cart"] != null && maKH > 0)
-        //        {
-        //            MergeSessionCartToDb(maKH); // Hàm riêng của bạn
-        //        }
-
-        //        // Tạo Token (Optional - nếu bạn dùng JWT)
-        //        var token = JwtHelper.GenerateToken(loginInput, userRole, userName);
-
-        //        // ====================================================
-        //        // [QUAN TRỌNG] 8. XỬ LÝ ĐÍCH ĐẾN (TARGET URL)
-        //        // ====================================================
-        //        string targetUrl = "";
-
-        //        // Ưu tiên: Nếu có returnUrl (khách đang vào link nào đó bị bắt login)
-        //        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-        //        {
-        //            targetUrl = returnUrl;
-        //        }
-        //        else
-        //        {
-        //            // Phân quyền theo Role
-        //            // Kiểm tra chính xác chuỗi "Admin" trong database của bạn
-        //            if (userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
-        //            {
-        //                // Chuyển sang Area Admin -> Controller Home -> Action Index
-        //                targetUrl = Url.Action("Index", "Home", new { area = "Admin" });
-        //            }
-        //            else
-        //            {
-        //                // Chuyển sang trang chủ người dùng
-        //                targetUrl = Url.Action("Index", "Home", new { area = "" });
-        //            }
-        //        }
-
-        //        // Trả về JSON chứa URL để JS chuyển hướng
-        //        return Json(new
-        //        {
-        //            success = true,
-        //            message = "Đăng nhập thành công!",
-        //            token = token,
-        //            returnUrl = targetUrl
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
-        //    }
-        //}
-
-        // Helper: Gộp giỏ hàng từ Session vào DB rồi xóa Session
-        //private void MergeSessionCartToDb(int maKH)
-        //{
-        //    try
-        //    {
-        //        var sessionCart = (GioHang)Session["Cart"];
-        //        if (sessionCart != null && sessionCart.ChiTietGioHangs != null && sessionCart.ChiTietGioHangs.Count > 0)
-        //        {
-        //            // 1. Tìm hoặc tạo giỏ hàng DB
-        //            var dbCart = db.GioHangs.FirstOrDefault(g => g.MaKH == maKH);
-        //            if (dbCart == null)
-        //            {
-        //                dbCart = new GioHang { MaKH = maKH, NgayTao = DateTime.Now };
-        //                db.GioHangs.Add(dbCart);
-        //                db.SaveChanges();
-        //            }
-
-        //            // 2. Duyệt từng món session -> chèn vào DB
-        //            foreach (var itemSess in sessionCart.ChiTietGioHangs)
-        //            {
-        //                var dbItem = db.ChiTietGioHangs.FirstOrDefault(c =>
-        //                    c.MaGioHang == dbCart.MaGioHang &&
-        //                    c.MaSP == itemSess.MaSP &&
-        //                    c.MaSize == itemSess.MaSize &&
-        //                    c.MaMau == itemSess.MaMau);
-
-        //                if (dbItem != null)
-        //                {
-        //                    dbItem.SoLuong += itemSess.SoLuong; // Cộng dồn
-        //                }
-        //                else
-        //                {
-        //                    var newItem = new ChiTietGioHang
-        //                    {
-        //                        MaGioHang = dbCart.MaGioHang,
-        //                        MaSP = itemSess.MaSP,
-        //                        SoLuong = itemSess.SoLuong,
-        //                        DonGia = itemSess.DonGia,
-        //                        MaSize = itemSess.MaSize,
-        //                        MaMau = itemSess.MaMau
-        //                    };
-        //                    db.ChiTietGioHangs.Add(newItem); // Thêm mới
-        //                }
-        //            }
-        //            db.SaveChanges();
-
-        //            // 3. QUAN TRỌNG: Xóa sạch Session Cart sau khi gộp xong
-        //            Session["Cart"] = null;
-        //        }
-        //    }
-        //    catch (Exception) { /* Log error if needed */ }
-        //}
 
         // ====================================================
         // 2. ĐĂNG KÝ

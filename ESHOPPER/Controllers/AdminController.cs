@@ -110,44 +110,57 @@ namespace ESHOPPER.Controllers.Admin
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ProductCreate(SanPham sanPham, HttpPostedFileBase ImageUpload) 
+        public ActionResult ProductCreate(SanPham sanPham, HttpPostedFileBase ImageUpload)
         {
             if (ModelState.IsValid)
             {
-                // 1. Xử lý lưu ảnh
-                if (ImageUpload != null && ImageUpload.ContentLength > 0)
+                try
                 {
-                    // Lấy tên file
-                    string fileName = System.IO.Path.GetFileName(ImageUpload.FileName);
+                    if (ImageUpload != null && ImageUpload.ContentLength > 0)
+                    {
+                        // 1. Tạo tên file duy nhất để tránh trùng lặp
+                        string fileName = System.IO.Path.GetFileNameWithoutExtension(ImageUpload.FileName);
+                        string extension = System.IO.Path.GetExtension(ImageUpload.FileName);
+                        fileName = fileName + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + extension;
 
-                    // (Tùy chọn) Thêm timestamp để tránh trùng tên file
-                    // fileName = DateTime.Now.ToString("yyyyMMddHHmmss") + "_" + fileName;
+                        // 2. Xác định thư mục lưu trữ
+                        string folderPath = Server.MapPath("~/Images/Products/");
 
-                    // Đường dẫn lưu file (Thư mục ~/Images/Products/ phải tồn tại)
-                    string path = System.IO.Path.Combine(Server.MapPath("~/Images/Products/"), fileName);
+                        // 3. Kiểm tra và tạo thư mục nếu chưa tồn tại
+                        if (!System.IO.Directory.Exists(folderPath))
+                        {
+                            System.IO.Directory.CreateDirectory(folderPath);
+                        }
 
-                    // Lưu file lên server
-                    ImageUpload.SaveAs(path);
+                        // 4. Lưu file
+                        string path = System.IO.Path.Combine(folderPath, fileName);
+                        ImageUpload.SaveAs(path);
 
-                    // Cập nhật tên file vào model để lưu xuống DB
-                    sanPham.AnhSP = fileName;
+                        // 5. Gán tên file vào model
+                        sanPham.AnhSP = fileName;
+                    }
+                    else
+                    {
+                        sanPham.AnhSP = "default.png";
+                    }
+
+                    db.SanPhams.Add(sanPham);
+                    db.SaveChanges();
+
+                    return RedirectToAction("ProductList");
                 }
-                else
+                catch (Exception ex)
                 {
-                    // (Tùy chọn) Gán ảnh mặc định nếu không upload
-                    sanPham.AnhSP = "default.png";
+                    // Ghi log lỗi nếu cần thiết
+                    ModelState.AddModelError("", "Đã xảy ra lỗi khi lưu sản phẩm: " + ex.Message);
                 }
-
-                // 2. Lưu sản phẩm vào Database
-                db.SanPhams.Add(sanPham);
-                db.SaveChanges();
-
-                return RedirectToAction("ProductList");
             }
 
-            // Nếu model lỗi, load lại dropdownlist
-            ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenLoai", sanPham.MaDM);
-            ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC", sanPham.MaNCC);
+            // Nếu ModelState không hợp lệ hoặc có lỗi catch, cần load lại các DropDownList để hiển thị lại View
+            // Ví dụ:
+            // ViewBag.MaDM = new SelectList(db.DanhMucs, "MaDM", "TenDM", sanPham.MaDM);
+            // ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC", sanPham.MaNCC);
+
             return View(sanPham);
         }
 
@@ -172,8 +185,6 @@ namespace ESHOPPER.Controllers.Admin
             return View(sanPham);
         }
 
-        // POST: Admin/ProductEdit/5
-        // POST: Admin/ProductEdit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ProductEdit(SanPham sanPham, HttpPostedFileBase ImageUpload)

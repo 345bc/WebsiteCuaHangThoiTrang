@@ -259,7 +259,6 @@
                             }
                             else
                             {
-                                /* TRƯỜNG HỢP KHÔNG CON */
                                 <li>
                                     <a href="@Url.Action("Shop", "Home", new { categoryId = parent.MaDM, searchString = Model.SearchString, sortOrder = Model.SortOrder })"
                                        class="@(Model.CurrentCategoryId == parent.MaDM ? "active-cat" : "")">
@@ -287,24 +286,24 @@
                         <label class="custom-control-label" for="price-all">All Prices</label>
                     </div>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="price-1" name="priceRange" value="0-100"
-                               @(Model.PriceRange == "0-100" ? "checked" : "") onchange="this.form.submit()">
-                        <label class="custom-control-label" for="price-1">$0 - $100</label>
+                        <input type="radio" class="custom-control-input" id="price-1" name="priceRange" value="1"
+                               @(Model.PriceRange == "1" ? "checked" : "") onchange="this.form.submit()">
+                        <label class="custom-control-label" for="price-1">100k-500k</label>
                     </div>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="price-2" name="priceRange" value="100-200"
-                               @(Model.PriceRange == "100-200" ? "checked" : "") onchange="this.form.submit()">
-                        <label class="custom-control-label" for="price-2">$100 - $200</label>
+                        <input type="radio" class="custom-control-input" id="price-2" name="priceRange" value="2"
+                               @(Model.PriceRange == "2" ? "checked" : "") onchange="this.form.submit()">
+                        <label class="custom-control-label" for="price-2">500k-1000k</label>
                     </div>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="price-3" name="priceRange" value="200-300"
-                               @(Model.PriceRange == "200-300" ? "checked" : "") onchange="this.form.submit()">
-                        <label class="custom-control-label" for="price-3">$200 - $300</label>
+                        <input type="radio" class="custom-control-input" id="price-3" name="priceRange" value="3"
+                               @(Model.PriceRange == "3" ? "checked" : "") onchange="this.form.submit()">
+                        <label class="custom-control-label" for="price-3">1000k-2000k</label>
                     </div>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="price-4" name="priceRange" value="300-400"
-                               @(Model.PriceRange == "300-400" ? "checked" : "") onchange="this.form.submit()">
-                        <label class="custom-control-label" for="price-4">$300 - $400</label>
+                        <input type="radio" class="custom-control-input" id="price-4" name="priceRange" value="4"
+                               @(Model.PriceRange == "4" ? "checked" : "") onchange="this.form.submit()">
+                        <label class="custom-control-label" for="price-4">> 2000k</label>
                     </div>
 
                     <div class="mt-3 pt-3 border-top text-center">
@@ -314,12 +313,6 @@
                     </div>
                 </div>
             </form>
-
-            <div class="sidebar-widget text-center" style="background: #D19C97; color: #fff;">
-                <h5 class="text-white font-weight-bold mb-1">Season Sale</h5>
-                <p class="mb-3" style="opacity: 0.9">Get 50% off on arrivals!</p>
-                <button class="btn btn-outline-light btn-sm">Shop Now</button>
-            </div>
 
         </div>
 

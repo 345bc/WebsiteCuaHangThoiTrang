@@ -1,10 +1,10 @@
-ESHOPPER — Ứng dụng bán hàng (Đồ án Lập trình Web)
+ZELLA — Ứng dụng bán hàng (Đồ án Lập trình Web)
 
-Mô tả dự án ngắn gọn: ESHOPPER là một ứng dụng bán hàng (ASP.NET MVC) mẫu được xây dựng để làm đồ án môn lập trình web. Ứng dụng bao gồm chức năng quản lý sản phẩm, danh mục, người dùng, đặt hàng, và tích hợp cơ sở dữ liệu SQL Server.
+Mô tả dự án ngắn gọn: ZELLA là một ứng dụng bán hàng (ASP.NET MVC) mẫu được xây dựng để làm đồ án môn lập trình web. Ứng dụng bao gồm chức năng quản lý sản phẩm, danh mục, người dùng, đặt hàng, và tích hợp cơ sở dữ liệu SQL Server.
 
 **Nội dung chính**
 
-- **Tên dự án**: ESHOPPER
+- **Tên dự án**: ZELLA
 - **Ngôn ngữ & nền tảng**: C#, ASP.NET MVC (Framework), Entity Framework 6
 - **Môi trường phát triển**: Visual Studio (Windows), IIS / IIS Express
 - **Cơ sở dữ liệu**: SQL Server (Database file: [Database.sql](Database.sql))

@@ -544,19 +544,15 @@ namespace ESHOPPER.Controllers.WebPage
                 return RedirectToAction("Index", "Cart");
             }
 
-            // 3. Cập nhật thông tin Header đơn hàng
             model.NgayDat = DateTime.Now;
             model.TongTien = itemsToBuy.Sum(x => (x.DonGia ?? 0) * (x.SoLuong ?? 0));
             if (maKH.HasValue) model.MaKH = maKH.Value;
 
-            // Trạng thái: 1 - Đang chờ thanh toán (VNPay), 2 - Đang xử lý (COD)
             model.TrangThai = (paymentMethod == "VNPay") ? 1 : 2;
 
-            // Lưu Header DonHang trước để lấy MaDH
             db.DonHangs.Add(model);
             db.SaveChanges();
 
-            // 4. Lưu Chi tiết đơn hàng (ChiTietDonHang)
             foreach (var item in itemsToBuy)
             {
                 var chiTiet = new ChiTietDonHang

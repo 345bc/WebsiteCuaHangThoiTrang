@@ -71,7 +71,7 @@
                                 <h4 class="text-base font-bold text-slate-800 line-clamp-2">
                                     @(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Sản phẩm")
                                 </h4>
-                                <span class="text-base font-bold text-slate-800">@string.Format("{0:N0} ₫", subTotal)</span>
+                                <span class="text-base font-bold text-slate-800">@string.Format("{0:N0} VNĐ", subTotal)</span>
                             </div>
 
                             <div class="flex flex-wrap gap-2 mb-2">
@@ -84,7 +84,7 @@
                             </div>
 
                             <div class="text-sm text-slate-500 flex items-center gap-1">
-                                <span>@string.Format("{0:N0} ₫", item.DonGia)</span>
+                                <span>@string.Format("{0:N0} VNĐ", item.DonGia)</span>
                                 <span class="text-xs">x</span>
                                 <span class="font-bold text-slate-700">@item.SoLuong</span>
                             </div>
@@ -96,7 +96,7 @@
             <div class="bg-slate-50 p-6 border-t border-slate-200">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-slate-500 text-sm">Tạm tính</span>
-                    <span class="text-slate-700 font-medium">@string.Format("{0:N0} ₫", tongTienHang)</span>
+                    <span class="text-slate-700 font-medium">@string.Format("{0:N0} VNĐ", tongTienHang)</span>
                 </div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-slate-500 text-sm">Phí vận chuyển</span>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="flex justify-between items-center pt-3 border-t border-slate-200 mt-3">
                     <span class="text-slate-800 font-bold">Tổng cộng</span>
-                    <span class="text-2xl font-bold text-brand-blue">@string.Format("{0:N0} ₫", donHangInfo?.TongTien ?? tongTienHang)</span>
+                    <span class="text-2xl font-bold text-brand-blue">@string.Format("{0:N0} VNĐ", donHangInfo?.TongTien ?? tongTienHang)</span>
                 </div>
             </div>
         </div>

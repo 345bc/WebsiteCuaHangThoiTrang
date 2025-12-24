@@ -90,11 +90,16 @@ namespace ESHOPPER.Controllers.Admin
 
         public ActionResult ProductCreate()
         {
-            ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenDanhMuc");
+            var danhMucGoc = db.DanhMucSanPhams
+                .Where(dm => dm.MaDanhMucCha != null)
+                .ToList();
+
+            ViewBag.MaDM = new SelectList(danhMucGoc, "MaDM", "TenDanhMuc");
             ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC");
-            ViewBag.MaSP = new SelectList(db.SanPhams, "MaSP", "MaDM");
+
             return View();
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -155,19 +160,23 @@ namespace ESHOPPER.Controllers.Admin
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
             SanPham sanPham = db.SanPhams.Find(id);
             if (sanPham == null)
             {
                 return HttpNotFound();
             }
 
-            // Tạo danh sách chọn cho Dropdown
-            ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenDanhMuc", sanPham.MaDM);
+            var danhMucGoc = db.DanhMucSanPhams
+                .Where(dm => dm.MaDanhMucCha != null) 
+                .ToList();
+
+            ViewBag.MaDM = new SelectList(danhMucGoc, "MaDM", "TenDanhMuc", sanPham.MaDM); 
             ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC", sanPham.MaNCC);
-            // (Đã xóa dòng ViewBag.MaSP bị trùng lặp thừa)
 
             return View(sanPham);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -175,19 +184,16 @@ namespace ESHOPPER.Controllers.Admin
         {
             if (ModelState.IsValid)
             {
-                // --- XỬ LÝ ẢNH ---
                 if (ImageUpload != null && ImageUpload.ContentLength > 0)
                 {
                     string finalFileName = "";
                     string uploadFolder = Server.MapPath("~/Images/Products/");
 
-                    // Đảm bảo thư mục tồn tại
                     if (!Directory.Exists(uploadFolder))
                     {
                         Directory.CreateDirectory(uploadFolder);
                     }
 
-                    // TRƯỜNG HỢP 1: Sản phẩm ĐÃ CÓ ảnh cũ
                     if (!string.IsNullOrEmpty(sanPham.AnhSP))
                     {
                         string oldBaseName = Path.GetFileNameWithoutExtension(sanPham.AnhSP);
@@ -196,37 +202,28 @@ namespace ESHOPPER.Controllers.Admin
 
                         string oldFullPath = Path.Combine(uploadFolder, sanPham.AnhSP);
 
-                        // Nếu đuôi ảnh thay đổi, xóa ảnh cũ
                         if (finalFileName != sanPham.AnhSP && System.IO.File.Exists(oldFullPath))
                         {
                             System.IO.File.Delete(oldFullPath);
                         }
                     }
-                    // TRƯỜNG HỢP 2: Sản phẩm CHƯA CÓ ảnh
                     else
                     {
                         finalFileName = "SP_" + DateTime.Now.Ticks + Path.GetExtension(ImageUpload.FileName);
                     }
 
-                    // Đường dẫn lưu file
                     string savePath = Path.Combine(uploadFolder, finalFileName);
 
-                    // ⭐ QUAN TRỌNG: Lưu file lên server
                     ImageUpload.SaveAs(savePath);
 
-                    // Cập nhật tên file vào database
                     sanPham.AnhSP = finalFileName;
                 }
-                // (Nếu không chọn ảnh mới, giữ nguyên ảnh cũ)
-
-                // --- LƯU DATABASE ---
                 db.Entry(sanPham).State = EntityState.Modified;
                 db.SaveChanges();
 
                 return RedirectToAction("ProductList");
             }
 
-            // Nếu form lỗi, load lại dropdown
             ViewBag.MaDM = new SelectList(db.DanhMucSanPhams, "MaDM", "TenDanhMuc", sanPham.MaDM);
             ViewBag.MaNCC = new SelectList(db.NhaCungCaps, "MaNCC", "TenNCC", sanPham.MaNCC);
             return View(sanPham);

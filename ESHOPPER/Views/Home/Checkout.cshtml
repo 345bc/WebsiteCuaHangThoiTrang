@@ -238,7 +238,7 @@
                                 {
                                     <div class="d-flex align-items-center mb-3 border-bottom pb-3">
                                         <div style="position: relative;">
-                                            <img src="@Url.Content("~/Images/Products/" + (item.BienTheSanPham?.SanPham?.AnhSP ?? "no-image.png"))"
+                                            <img src="@Url.Content("~/Images/Product_Variants/" + (item.BienTheSanPham.AnhBienThe ?? "no-image.png"))"
                                                  style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
 
                                             <span class="badge badge-secondary rounded-circle"
@@ -256,7 +256,7 @@
                                             </small>
                                         </div>
                                         <div class="font-weight-bold">
-                                            @string.Format("{0:N0} ₫", (item.DonGia ?? 0) * (item.SoLuong ?? 0))
+                                            @string.Format("{0:N0} VNĐ", (item.DonGia ?? 0) * (item.SoLuong ?? 0))
                                         </div>
                                     </div>
                                 }
@@ -269,7 +269,7 @@
 
                         <div class="summary-item">
                             <span class="text-muted">Tạm tính</span>
-                            <span class="font-weight-bold">@string.Format("{0:N0} ₫", Model.TongTien)</span>
+                            <span class="font-weight-bold">@string.Format("{0:N0} VNĐ", Model.TongTien)</span>
                         </div>
                         <div class="summary-item">
                             <span class="text-muted">Phí vận chuyển</span>
@@ -278,7 +278,7 @@
 
                         <div class="summary-total">
                             <span>Tổng cộng</span>
-                            <span>@string.Format("{0:N0} ₫", Model.TongTien)</span>
+                            <span>@string.Format("{0:N0} VNĐ", Model.TongTien)</span>
                         </div>
 
                         <button type="submit" class="btn-place-order mt-4">

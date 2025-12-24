@@ -18,16 +18,16 @@ namespace ESHOPPER.Controllers.WebPage
             var vm = new HomeViewModel
             {
                 introes = db.Introes.ToList(),
-                DanhMucSanPhams = db.DanhMucSanPhams.ToList(),
                 nhaCungCaps = db.NhaCungCaps.ToList(),
                 SanPhams = db.SanPhams
                         .OrderByDescending(p => p.MaSP) 
-                        .Take(16)
+                        .Take(10)
                         .ToList(),
-                SanPhamNgauNhiens = db.SanPhams
-                                .OrderBy(r => Guid.NewGuid())
-                                .Take(8)
-                                .ToList()
+                FromGucci= db.SanPhams
+                        .Where(p => p.NhaCungCap != null && p.NhaCungCap.TenNCC.Contains("Gucci"))
+                        .OrderByDescending(p => p.MaSP)
+                        .Take(5)
+                        .ToList(),
             };
 
             return View(vm);
@@ -40,7 +40,6 @@ namespace ESHOPPER.Controllers.WebPage
 
             var categories = db.DanhMucSanPhams.ToList();
 
-            // [SỬA]: So sánh int với int (nullable)
             if (categoryId.HasValue)
             {
                 products = products.Where(p => p.MaDM == categoryId.Value);

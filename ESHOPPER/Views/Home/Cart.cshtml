@@ -257,7 +257,6 @@
             checkboxes.forEach(chk => {
                 chk.addEventListener('change', function() {
                     if (!this.checked && checkAll) checkAll.checked = false;
-                    // Nếu tất cả đều được chọn thì check cái CheckAll
                     if (document.querySelectorAll('.item-check:checked').length === checkboxes.length) {
                         if(checkAll) checkAll.checked = true;
                     }
@@ -265,16 +264,13 @@
                 });
             });
 
-            // Mặc định chọn tất cả khi vào trang (Tuỳ chọn)
             if(checkAll) {
                 checkAll.checked = true;
                 checkboxes.forEach(chk => chk.checked = true);
                 calculateTotal();
             }
 
-            // 4. XỬ LÝ THANH TOÁN
             btnCheckout.addEventListener('click', function() {
-                // Lấy danh sách MaBienThe
                 const selectedIds = Array.from(document.querySelectorAll('.item-check:checked'))
                                          .map(cb => cb.value);
 
@@ -288,29 +284,23 @@
                     return;
                 }
 
-                // Chuyển hướng sang trang Checkout với query string
                 const idsString = selectedIds.join(',');
-                const checkoutUrl = '@Url.Action("Checkout", "Home")'; // Hoặc CartController nếu bạn để ở đó
+                const checkoutUrl = '@Url.Action("Checkout", "Home")';
 
-                // Logic đăng nhập có thể xử lý ở Controller Checkout (Authorize)
-                // hoặc xử lý tại đây như code cũ của bạn.
                 if (!isLoggedIn) {
                      Swal.fire({
                         title: 'Bạn chưa đăng nhập',
                         text: "Đăng nhập để lưu đơn hàng vào tài khoản của bạn?",
                         icon: 'info',
-                        //showCancelButton: true,
                         confirmButtonColor: '#222',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'Đăng nhập ngay',
-                        //cancelButtonText: 'Mua không cần TK'
+                         confirmButtonText: 'Đăng nhập ngay',
+                         showCancelButton: true,    
+                         allowOutsideClick: false
                     }).then((result) => {
                         if (result.isConfirmed) {
-                             // Chuyển đến trang login
                              window.location.href = '@Url.Action("Login", "Auth")?returnUrl=' + encodeURIComponent(window.location.href);
                         } else {
-                             // Vẫn cho thanh toán (Guest)
-                             window.location.href = checkoutUrl + '?selectedIds=' + idsString;
                         }
                     })
                 } else {
